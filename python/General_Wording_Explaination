@@ -1,0 +1,11 @@
+This can be taken as a substitution of python documentation since
+I dont wanna write python standard documentation for now.
+
+Tip1: Attribute name "pos" always stands for "position" which is a dictionary that maps nodes onto their
+2D coordinates. A "position/pos" determine uniquely the state of a drawing(or everything of a drawing).
+So it can also be called position_state in some sense.
+
+Tip2: Our read file only recognize absolute path(on windows). Not sure if this work on linux/mac too(slash
+back slash issue). So I put on default file there.
+Another way to read files except the default one is to modify hardcoded default file path(copy paste) under
+the method "load_file_hard" in Class "Helper"
