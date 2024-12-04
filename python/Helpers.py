@@ -175,12 +175,26 @@ def report_and_draw(graph, edges, new_pos):
     plt.show()
 
 
-def initial_report(edges, pos, graph):
-    check_total(edges, pos)
+def initial_report_smart(edges, pos, graph):
+    if len(graph.nodes()) < 400 and edges < 500:
+        print(f'nodes size: {len(graph.nodes())}, edges size: {len(graph.edges())}')
+        print("checking total and degree........")
+        check_total(edges, pos)
     plt.figure()
     nwx.draw_networkx(graph, pos=pos, with_labels=True, node_color="red", node_size=100,
                       font_color="white", font_size=10, font_family="Times New Roman",
                       font_weight="bold", width=1, edge_color="black")
+    plt.margins(0.2)
+    show_grid()
+    plt.show()
+
+
+def initial_report(edges, pos, graph):
+    check_total(edges, pos)
+    plt.figure()
+    nwx.draw_networkx(graph, pos=pos, with_labels=True, node_color="red", node_size=100,
+                        font_color="white", font_size=10, font_family="Times New Roman",
+                        font_weight="bold", width=1, edge_color="black")
     plt.margins(0.2)
     show_grid()
     plt.show()
@@ -272,12 +286,12 @@ def ask_for_combined_optimization(edges, graph, pos, times, width, height):
     return new_pos
 
 
-def ask_for_heuristic_with_given_function(edges, graph, pos, times, width, height):
+def ask_for_heuristic_with_given_function(edges, graph, pos, times, width, height, function):
     old_copy = pos.copy()
     input_string = input("Do you want to perform a heuristic optimization?[y/n]")
     new_pos = pos
     if input_string == "y":
-        new_pos = hrt.heuristic_with_random(edges, graph, pos, times, width, height, hrt.diameter_induced_function)
+        new_pos = function(edges, graph, pos, times, width, height)
         print(".........heuristic optimization circle terminated.........")
         report_and_draw(graph, edges, new_pos)
         check_identical(old_copy, new_pos)

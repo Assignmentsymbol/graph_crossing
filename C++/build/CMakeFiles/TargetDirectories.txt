@@ -1,0 +1,3 @@
+/Users/jeffk/Desktop/DE/TUM/W_24-25/Practical_course/C++/build/CMakeFiles/GraphProcessor.dir
+/Users/jeffk/Desktop/DE/TUM/W_24-25/Practical_course/C++/build/CMakeFiles/edit_cache.dir
+/Users/jeffk/Desktop/DE/TUM/W_24-25/Practical_course/C++/build/CMakeFiles/rebuild_cache.dir
