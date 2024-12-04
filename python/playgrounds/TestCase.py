@@ -41,8 +41,5 @@ plt.margins(0.2)
 sg()
 plt.show()
 
-# list_d = nwx.floyd_warshall(graph)
-# results = {a: dict(b) for a, b in list_d.items()}
-# print(results)
-# print(type(results[0][3]))
+
 
