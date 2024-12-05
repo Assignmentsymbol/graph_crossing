@@ -1,3 +1,4 @@
+import copy
 import math
 from typing import Dict, Any, Set
 
@@ -14,14 +15,23 @@ import SimulateAnnealingTools
 def check_degree_reusable(nodes, edges, pos, crossed_edges_dict, last_moved_node):
     # 5t spent
     edges = set(edges)
+    backup = None
     # print(edges)
-    if last_moved_node is None or crossed_edges_dict is None:
+    if  crossed_edges_dict is None:
         crossed_edges_dict: dict[Any, set[Any]] = {edge: set() for edge in edges}
+        # edge:{edge,edge,edge}
         initial_check(edges,pos, crossed_edges_dict)
+        #backup
+    elif last_moved_node is None:
+        pass
     else:
+        # crossed_edges_dict_copy = copy.deepcopy(crossed_edges_dict)
+        # crossed_edges_dict = crossed_edges_dict_copy
+        # looking for work around
         edges_of_the_node = {edge for edge in edges if edge[0] == last_moved_node or edge[1] == last_moved_node}
-        remove_old_crossings(crossed_edges_dict,last_moved_node,edges,edges_of_the_node)
-        refill_new_crossings(crossed_edges_dict,last_moved_node,edges,edges_of_the_node,pos)
+        diff1 = remove_old_crossings(crossed_edges_dict,last_moved_node,edges,edges_of_the_node)
+        diff2 = refill_new_crossings(crossed_edges_dict,last_moved_node,edges,edges_of_the_node,pos)
+        backup = diff1,diff2
     worst_edge = sorted(crossed_edges_dict.items(),key=lambda item: len(item[1]),reverse=True)[0][0]
     # this line needs doc
     # print(type(crossed_edges_dict[worst_edge]))
@@ -34,23 +44,33 @@ def check_degree_reusable(nodes, edges, pos, crossed_edges_dict, last_moved_node
     print('The maximum value of crossings in a single edge is: ' + max_crossing.__str__())
     print('The total number of the crossings is: ' + total.__str__())
 
-    return max_crossing,total,worst_cluster,crossed_edges_dict
+    return max_crossing,total,worst_cluster,crossed_edges_dict,backup
+
 
 
 def remove_old_crossings(crossed_edges_dict, node, edges, edges_of_the_node):
     # edges_of_the_node = {edge for edge in edges if edge[0] == node or edge[1] == node}
+    #back up here
+    diff1: dict[Any, set[Any]] = {edge: set() for edge in edges}
     for edge_1 in edges_of_the_node:
+        diff1[edge_1] = {edge for edge in crossed_edges_dict[edge_1]}
         for edge_2 in crossed_edges_dict[edge_1].copy():
+            diff1[edge_2].add(edge_1)
             crossed_edges_dict[edge_2].remove(edge_1)
         crossed_edges_dict[edge_1] = set()
+    return diff1
 
 
 def refill_new_crossings(crossed_edges_dict, node, edges, edges_of_the_node, pos):
+    diff2: dict[Any, set[Any]] = {edge: set() for edge in edges}
     for edge_1 in edges_of_the_node:
         for edge_2 in edges:
             if Helpers.is_intersect(edge_1, edge_2, pos, True):
                 crossed_edges_dict[edge_1].add(edge_2)
                 crossed_edges_dict[edge_2].add(edge_1)
+                diff2[edge_1].add(edge_2)
+                diff2[edge_2].add(edge_1)
+    return diff2
 
 
 def initial_check(edges, pos, crossed_edges_dict):
@@ -109,19 +129,31 @@ def new_process_testing(graph, edges, pos, width, height, times, crossed_pos_dic
     old_pos = pos.copy()
     for i in range(times):
         new_pos,random_node = random_move(old_pos,graph,width,height)
-        old_count,old_total,worst_cluster,crossed_edges_dict = check_degree_reusable(graph.nodes,edges,pos, crossed_pos_dict ,None)
-        new_count,new_total,worst_cluster,crossed_edges_dict = check_degree_reusable(graph.nodes, edges, new_pos,crossed_pos_dict,random_node)
+        old_count,old_total,worst_cluster,crossed_pos_dict,_ = check_degree_reusable(graph.nodes,edges,old_pos, crossed_pos_dict ,None)
+        new_count,new_total,worst_cluster,crossed_edges_dict_new,backup = check_degree_reusable(graph.nodes, edges, new_pos,crossed_pos_dict,random_node)
         print("------new_count is: " + str(new_count) + "-----------")
         print("------old_count is: " + str(old_count)+ "-----------")
-        if  new_count < old_count:
+        if  new_count <= old_count:
             print(f"new count better-------iteration {i} terminated--------")
             old_pos = new_pos
-        print(f"old count better-------iteration {i} terminated--------")
+            crossed_pos_dict = crossed_edges_dict_new
+        else:
+            print(f"old count better-------iteration {i} terminated--------")
+            for key in backup[1].keys():
+                if len(backup[1][key]) != 0:
+                    for edge in backup[1][key]:
+                        crossed_pos_dict[key].remove(edge)
+
+            for key in backup[0].keys():
+                if len(backup[0][key]) != 0:
+                    for edge in backup[0][key]:
+                        crossed_pos_dict[key].add(edge)
+
         # if  new_total < old_total:
         #     print(f"------------new count better-------iteration {i} terminated--------")
         #     old_pos = new_pos
         # print(f"------------old count better-------iteration {i} terminated--------")
-    return old_pos
+    return old_pos,random_node
 
 
 def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
@@ -178,7 +210,7 @@ def ask_for_new_schema(edges, graph, pos, times, width, height, crossed_dict):
         crossed_dict = initialize_crossed_dict(graph,edges, pos)
     # new_pos = pos
     if input_string == "y":
-        pos = new_process_testing(graph, edges, pos, width, height, times, crossed_dict)
+        pos,random_node = new_process_testing(graph, edges, pos, width, height, times, crossed_dict)
         print(".........optimization circle terminated.........")
         draw(graph, edges, pos, width, height)
         Helpers.check_identical(old_copy, pos)
