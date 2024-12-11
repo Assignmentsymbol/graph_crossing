@@ -568,6 +568,7 @@ def check_overlap(nodes,pos):
         print("have duplicates-------")
         return False
 
+
 def goto_closest_spot(node,pos):
     for i in range(0,len(pos)):
         if pos[node] + (i,0) not in pos.items():

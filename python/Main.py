@@ -6,6 +6,7 @@ import Helpers
 import NewSchema
 
 # F:\graphdrawingSW\Graph_Intersaction\python\examples\graph15.json
+# https://jacoblmiller.github.io/tum-gd-contest/tool.html
 graph, nodes, edges, attributes, pos, \
     width, height = Helpers.data_process(Helpers.load_file())
 pos_old = pos.copy()
@@ -28,7 +29,7 @@ Helpers.initial_report_smart(edges, pos, graph)
 # print(pos.__len__())
 # pos = AdaptedNXTool.bcc_decomposition(graph,edges,pos,width,height,True)
 
-# pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False)
+pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False)
 # Helpers.check_total(edges, pos)
 # input("press anything to continue")
 
@@ -38,9 +39,10 @@ Helpers.initial_report_smart(edges, pos, graph)
 Helpers.manual_prompt()
 pre_made_input = edges, graph, pos, 50, width, height
 default_temperature = 10
-pos, temperature = NewSchema.ask_for_new_schema_SA(edges, graph, pos, 20, width, height, None,default_temperature)
+parameters = {"temp": default_temperature, "step size": 2, "cooling rate" : None, }
+pos, temperature = NewSchema.ask_for_new_schema_SA(edges, graph, pos, 100, width, height, None,parameters)
 # pos = AdaptedNXTool.ask_for_operation(graph, nodes, edges, attributes, pos, width, height,False)
-pos = NewSchema.ask_for_new_schema(edges, graph, pos, 100, width, height,None)
+pos = NewSchema.ask_for_new_schema(edges, graph, pos, 1000, width, height,None)
 Helpers.check_identical(pos_old,pos)
 # Helpers.check_total(edges,pos)
 

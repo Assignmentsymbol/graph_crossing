@@ -152,18 +152,17 @@ def new_process_testing(graph, edges, pos, width, height, times, crossed_pos_dic
 
 
 def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
-                                   initial_temperature,crossed_pos_dict):
+                                   initial_temperature,crossed_pos_dict,step_size=5):
     print("Start point of SA cycle------")
     old_pos = pos
     # new_pos = pos.copy()
     # old_count = Helpers.check_total(edges, old_pos)
     new_count = math.inf
     decreased_temperature = initial_temperature
-
     for i in range(times):
         # default setting if need
         backup_stack = deque()
-        for j in range(5):
+        for j in range(step_size):
             new_pos,random_node = random_move(old_pos, graph, width, height)
             old_count, old_total, worst_cluster, crossed_pos_dict, _ = check_degree_reusable(graph.nodes, edges, old_pos,
                                                                                              crossed_pos_dict, None)
@@ -238,28 +237,33 @@ def ask_for_new_schema(edges, graph, pos, times, width, height, crossed_dict):
     return pos
 
 
-def ask_for_new_schema_SA(edges, graph, pos, times, width, height, crossed_dict,temperature):
+def ask_for_new_schema_SA(edges, graph, pos, times, width, height, crossed_dict, param):
     old_copy = pos.copy()
     new_pos = pos
+    temperature = param["temp"]
+    step_size = param["step size"]
+    print(f'step size = {step_size.__str__()}')
     decreased_temperature = temperature
-    input_string = input("Do you want to perform a new schema of SA?[y/n]")
+    input_string = input("Do you want to perform simulated annealing?[y/n]")
     if input_string == "n":
         return pos,decreased_temperature
     if crossed_dict is None:
         crossed_dict = initialize_crossed_dict(graph,edges, pos)
     # new_pos = pos
     if input_string == "y":
-        pos,decreased_temperature = simulate_annealing_exponential(edges,graph,pos ,times,
-                                                                   width, height, decreased_temperature,crossed_dict)
+        pos,decreased_temperature = simulate_annealing_exponential(edges, graph, pos, times,
+                                                                   width, height,
+                                                                   decreased_temperature, crossed_dict, step_size)
         print(".........optimization circle terminated.........")
         draw(graph, edges, pos, width, height)
         Helpers.check_identical(old_copy, pos)
         check_degree_reusable(graph.nodes,edges,pos, crossed_dict,None)
-        pos,decreased_temperature = ask_for_new_schema_SA(edges, graph, pos, times, width, height,crossed_dict,decreased_temperature)
+        param['temp'] = decreased_temperature
+        pos,decreased_temperature = ask_for_new_schema_SA(edges, graph, pos, times, width, height, crossed_dict, param)
     elif input_string == "rp":
         Helpers.report_and_draw(graph, edges, pos, width, height)
     #     return cross dict
-    return pos,decreased_temperature
+    return pos,param
 
 
 def initialize_crossed_dict(graph, edges, pos):
@@ -272,8 +276,8 @@ def initialize_crossed_dict(graph, edges, pos):
 def draw(graph, edges, new_pos, width, height):
     diameter = (width**2+height**2)**(1/2)
     fig = plt.figure()
-    networkx.draw_networkx(graph, pos=new_pos, with_labels=True, node_color="red", node_size=(4000/diameter),
-                      font_color="white", font_size=10, font_family="Times New Roman",
+    networkx.draw_networkx(graph, pos=new_pos, with_labels=True, node_color="red", node_size=(4500/diameter),
+                      font_color="blue", font_size=10, font_family="Times New Roman",
                       font_weight="bold", width=1, edge_color="black")
     plt.margins(0.2)
     plt.show()
