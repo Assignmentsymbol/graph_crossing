@@ -29,7 +29,8 @@ Helpers.initial_report_smart(edges, pos, graph)
 # print(pos.__len__())
 # pos = AdaptedNXTool.bcc_decomposition(graph,edges,pos,width,height,True)
 
-pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False)
+# pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False)
+# Helpers.report_and_draw(graph, edges,pos, width, height)
 # Helpers.check_total(edges, pos)
 # input("press anything to continue")
 
@@ -39,8 +40,9 @@ pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, w
 Helpers.manual_prompt()
 pre_made_input = edges, graph, pos, 50, width, height
 default_temperature = 10
-parameters = {"temp": default_temperature, "step size": 2, "cooling rate" : None, }
-pos, temperature = NewSchema.ask_for_new_schema_SA(edges, graph, pos, 100, width, height, None,parameters)
+# 0.6 or 1.8, on g6
+parameters = {"temp": 1, "step size": 2, "cooling rate" : None,"transition weight": None, }
+pos, temperature = NewSchema.ask_for_new_schema_SA(edges, graph, pos, 300, width, height, None,parameters)
 # pos = AdaptedNXTool.ask_for_operation(graph, nodes, edges, attributes, pos, width, height,False)
 pos = NewSchema.ask_for_new_schema(edges, graph, pos, 1000, width, height,None)
 Helpers.check_identical(pos_old,pos)
