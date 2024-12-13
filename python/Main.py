@@ -29,7 +29,7 @@ Helpers.initial_report_smart(edges, pos, graph)
 # print(pos.__len__())
 # pos = AdaptedNXTool.bcc_decomposition(graph,edges,pos,width,height,True)
 
-# pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False)
+pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False)
 # Helpers.report_and_draw(graph, edges,pos, width, height)
 # Helpers.check_total(edges, pos)
 # input("press anything to continue")

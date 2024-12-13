@@ -164,13 +164,24 @@ def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
         acceptance_probability = None
         backup_stack = deque()
         worst_cluster = None
+        total = math.inf
+        weight_rdm = 0.5
+        weight2_rdwc = 0.9
+        weight_release_string = 0.1
         for j in range(step_size):
+            move_decider = random.random()
+            pick_rd = move_decider < weight_rdm
+            pick_rdwc = weight_rdm < move_decider < weight2_rdwc
+            pick_release = move_decider > 0.9
             # new_pos,random_node = random_move(old_pos, graph, width, height)
             old_count, old_total, worst_cluster, crossed_pos_dict, _ = check_degree_reusable(graph.nodes, edges, old_pos,
                                                                                              crossed_pos_dict, None)
+            # if pick_rd:  new_pos,random_node = random_move(old_pos, graph, width, height)
+            # elif pick_rdwc: new_pos, random_node = random_move_on_cluster(old_pos, worst_cluster, width, height)
+            # else: new_pos, random_node = random_release(old_pos, graph, worst_cluster, width, height, edges, crossed_pos_dict)
+
+            new_pos, random_node = random_move(old_pos, graph, width, height)
             # new_pos, random_node = random_move_on_cluster(old_pos, worst_cluster, width, height)
-            # new_pos,random_node = random_move(old_pos, graph, width, height)
-            new_pos, random_node = random_shoot(old_pos,graph,worst_cluster,width,height,edges, crossed_pos_dict)
 
             new_count, new_total, worst_cluster, crossed_edges_dict_new, backup = check_degree_reusable(graph.nodes, edges,
                                                                                                         new_pos,
@@ -185,6 +196,7 @@ def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
 
 
         random_decider = random.random()
+        # to compare with the bad move acc. probability
         # if random_decider == 0:
         #     random_decider = 0.5
         if acceptance_probability > random_decider or new_count <= oldest_count:
@@ -207,6 +219,7 @@ def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
                         for edge in backup[0][key]:
                             crossed_pos_dict[key].add(edge)
         decreased_temperature = SimulateAnnealingTools.get_decreased_temperature(decreased_temperature)
+        total = min(old_total, new_total)
     # print(".........SA circle terminated.........")
     logger,_,_,_,_ = check_degree_reusable(graph.nodes, edges, old_pos, crossed_pos_dict, None)
     #hopefully i get my code from last week right
@@ -259,7 +272,8 @@ def random_switch(positions: dict, graph, width, height, switching_node, slot):
         return pos_copy, switching_node, None, None
 
 
-def random_shoot(positions: dict, graph, worst_cluster, width, height,edges,crossed_pos_dict):
+# too far
+def random_release(positions: dict, graph, worst_cluster, width, height, edges, crossed_pos_dict):
     """Transition API: Shouldn't edit the input pos; returns a tuple of pos, node (at least)"""
     pos_copy = positions.copy()
     random_node = random.choice(list(graph.nodes))
@@ -285,12 +299,11 @@ def random_shoot(positions: dict, graph, worst_cluster, width, height,edges,cros
     # should be neighbors
     for adj_node in adjacency:
         edge = random_node,adj_node
-        if edge not in edges:
-            edge = adj_node,random_node
-
-        if Helpers.is_intersect(edge,edge1,pos_copy,True):
+        rever_edge = adj_node,random_node
+        # too big
+        if Helpers.is_intersect(edge,edge1,pos_copy,True) or Helpers.is_intersect(rever_edge,edge1,pos_copy,True):
             count_e1 += 1
-        if Helpers.is_intersect(edge,edge2,pos_copy,True):
+        if Helpers.is_intersect(edge,edge2,pos_copy,True) or Helpers.is_intersect(rever_edge,edge1,pos_copy,True):
             count_e2 += 1
     print(f'count e1: {count_e1} ------')
     print(f'count e2: {count_e2} ------')
