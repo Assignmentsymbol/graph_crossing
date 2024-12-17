@@ -65,13 +65,13 @@ def calculate_acceptance_probability_for_crossing(old_energy,new_energy, tempera
         return accp_p
 
 
-def get_decreased_temperature(temperature):
+def get_decreased_temperature(temperature,cooling_rate=0.95):
     print("current temperature is: " + temperature.__str__())
     if temperature < 0.05:
         return 0.05
         # print(f"Degenerated to random mountain climb with p = {temperature}")
         # return 0.01
-    return 0.95 * temperature
+    return cooling_rate * temperature
 
 
 def wander(edges, graph, pos, width, height):

@@ -3,8 +3,7 @@ import json
 import math
 import os
 import statistics
-
-import AdaptedNXTool
+import numpy as np
 import NewSchema
 import networkx as nwx
 import Helpers
@@ -16,7 +15,6 @@ def unpack_parameters(params):
 
 def load_filee():
     current_directory = os.getcwd()
-    # print("Current Directory:", current_directory)
     with open(current_directory + r"/graph6.json", 'r') as file:
         data = json.load(file)
         return data
@@ -28,14 +26,15 @@ def grid_search(edges, graph, pos, times, width, height, crossed_pos_dict):
     best_params_candidates = []
     global_best = math.inf
     # pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False)
-    for i in range (10):
-        for iniTemp in range(1,10):
-            for step_size in range(1, 4):
-                _,_,logger = NewSchema.simulate_annealing_exponential(edges, graph, pos, times, width, height,
-                                       iniTemp/5,crossed_pos_dict,step_size,None)
-                if (iniTemp/5,step_size) not in score_record.keys():
-                    score_record[(iniTemp /5, step_size)] = []
-                score_record[(iniTemp/5,step_size)].append(logger)
+    for i in range(2):
+        for cooling_rate in np.linspace(0.5,1,5):
+            for iniTemp in np.linspace(1,2,5):
+                for step_size in range(1, 4):
+                    _,_,logger = NewSchema.simulate_annealing_exponential(edges, graph, pos, times, width, height,
+                                           iniTemp,crossed_pos_dict,step_size,None,cooling_rate)
+                    if (iniTemp,step_size) not in score_record.keys():
+                        score_record[(iniTemp, step_size,cooling_rate)] = []
+                    score_record[(iniTemp,step_size,cooling_rate)].append(logger)
 
     for key in score_record.keys():
         average = statistics.mean(score_record[key])
