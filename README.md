@@ -23,6 +23,5 @@ Futher documentation to be supplemented...
 | ![Graph 14](https://github.com/Assignmentsymbol/graph_crossing/blob/c5d711af630a4a600dc8f9deff5c8f14520fe6fd/python/pics/g14.png) | 649                 | very very very long... > 5mins       |
 | ![Graph 15](https://github.com/Assignmentsymbol/graph_crossing/blob/c5d711af630a4a600dc8f9deff5c8f14520fe6fd/python/pics/g15.png) | 81                | <60s       |
 
-### Notes
-Working on efficient snapping..
+
 
