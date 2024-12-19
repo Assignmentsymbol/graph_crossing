@@ -24,6 +24,5 @@ Futher documentation to be supplemented...
 | ![Graph 15](https://github.com/Assignmentsymbol/graph_crossing/blob/c5d711af630a4a600dc8f9deff5c8f14520fe6fd/python/pics/g15.png) | 81                | <10s       |
 
 ### Notes
-Working on efficient snapping and 
-
+Working on efficient snapping..
 
