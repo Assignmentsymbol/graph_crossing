@@ -219,6 +219,9 @@ def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
                 gradient = gradient_observer[-1] - gradient_observer[0]
                 print(f'gradient: {gradient} = {gradient_observer[-1]} - {gradient_observer[0]} --------------')
                 gradient_observer.clear()
+            if gradient_observer.__len__() > 200:
+                print('no improvement for long...')
+                return old_pos, decreased_temperature, None
 
         if gradient == 0:
             stuck = True
@@ -241,7 +244,9 @@ def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
 
             # new_pos, random_node = random_move(old_pos, graph, width, height)
             # if old_count < 100 and move_decider > 0.7 and old_total > 0 and go_chaotic:
-            if stuck and move_decider > 2 and 1>3:
+            if j > 0 and oldest_count < 80:
+                step_size = 5
+            if stuck and move_decider > 0.95:
                 new_pos, random_node = random_release(old_pos, graph, worst_cluster, width, height, edges, crossed_pos_dict)
                 # if step_size < 2:
                 #     step_size = 2
@@ -257,12 +262,13 @@ def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
             if j == 0:
                 oldest_count = old_count
                 oldest_total = old_total
-                # if(oldest_count>new_count):
-                #     break
+
             acceptance_probability = (SimulateAnnealingTools.
                                       calculate_acceptance_probability_for_crossing(oldest_count,
                                                                                     new_count,decreased_temperature))
             backup_stack.append(backup)
+            if (oldest_count > new_count):
+                break
 
 
         random_decider = random.random()
