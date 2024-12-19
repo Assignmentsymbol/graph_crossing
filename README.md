@@ -21,7 +21,7 @@ Futher documentation to be supplemented...
 | ![Graph 12](https://github.com/Assignmentsymbol/graph_crossing/blob/c5d711af630a4a600dc8f9deff5c8f14520fe6fd/python/pics/g12.png) | 299               | <1s       |
 | ![Graph 13](https://github.com/Assignmentsymbol/graph_crossing/blob/c5d711af630a4a600dc8f9deff5c8f14520fe6fd/python/pics/g13.png) | 1485              | <100s       |
 | ![Graph 14](https://github.com/Assignmentsymbol/graph_crossing/blob/c5d711af630a4a600dc8f9deff5c8f14520fe6fd/python/pics/g14.png) | 649                 | very very very long... > 5mins       |
-| ![Graph 15](https://github.com/Assignmentsymbol/graph_crossing/blob/c5d711af630a4a600dc8f9deff5c8f14520fe6fd/python/pics/g15.png) | 74 or ∞                | <60s       |
+| ![Graph 15](https://github.com/Assignmentsymbol/graph_crossing/blob/c5d711af630a4a600dc8f9deff5c8f14520fe6fd/python/pics/g15.png) | ∞                | <60s       |
 
 
 
