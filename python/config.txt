@@ -1,3 +1,8 @@
-input=benchmarks
-output=outputs
-report=outputs
+input=C:\Users\ASUS\Desktop\currentProjects\graph_crossing\python\input
+output=C:\Users\ASUS\Desktop\currentProjects\graph_crossing\python\output
+report=output
+silence=True
+iteration=100
+cooling rate=0.9
+initial temp=1
+step_size=2

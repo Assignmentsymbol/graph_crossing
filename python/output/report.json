@@ -1,0 +1,20 @@
+{
+    "Output_1": {
+        "initial crossing count": 17.0,
+        "after process crossing count": 4.0,
+        "improvement": 13.0,
+        "time used": 0.09100008010864258
+    },
+    "Output_2": {
+        "initial crossing count": 86.0,
+        "after process crossing count": 44.0,
+        "improvement": 42.0,
+        "time used": 0.3279998302459717
+    },
+    "Output_3": {
+        "initial crossing count": 26.0,
+        "after process crossing count": 33.0,
+        "improvement": -7.0,
+        "time used": 0.19700002670288086
+    }
+}

@@ -1,5 +1,7 @@
 import json
+import math
 import os
+import time
 
 import networkx
 import networkx as nwx
@@ -8,9 +10,10 @@ import AdaptedNXTool
 import Helpers
 import NewSchema
 
-def save_file_direct(graph: networkx.Graph, pos, width, height, filename):
-    current_directory = os.getcwd()
+def save_file_direct(graph: networkx.Graph, pos, width, height, filename, config):
+    # current_directory = os.getcwd()
     # data_testing = {"node": {"id": 1, "di": 2}}
+    storage_directory = config['output']
     data_out = {}
     nodes = []
     edges = []
@@ -25,21 +28,18 @@ def save_file_direct(graph: networkx.Graph, pos, width, height, filename):
     data_out["width"] = width
     data_out["height"] = height
 
-    with open(os.path.join(current_directory, f"{filename}.json"), 'w', encoding='utf-8') as file:
+    with open(os.path.join(storage_directory, f"{filename}.json"), 'w', encoding='utf-8') as file:
         json.dump(data_out, file, indent=4, ensure_ascii=False)
         # print("total: " + check_total(graph.edges, pos).__str__())
         print("File saved")
 
 
-def pass_config():
-    current_directory = os.getcwd()
-    return
-
-
-def load_directory():
+def load_directory(config):
+    input_directory = config['input']
     data_set = []
-    current_directory = os.getcwd()
-    target_directory = os.path.join(current_directory, 'benchmarks')
+    # current_directory = os.getcwd()
+    target_directory = input_directory
+
 
     for filename in os.listdir(target_directory):
         if filename.endswith('.json'):
@@ -69,41 +69,82 @@ def ask_for_new_schema_SA2(edges, graph, pos, times, width, height, crossed_dict
                                                                              decreased_temperature,
                                                                              crossed_dict, step_size, None)
     print(".........optimization circle terminated.........")
-    NewSchema.draw(graph, edges, pos, width, height)
     Helpers.check_identical(old_copy, pos)
     NewSchema.check_degree_reusable(graph.nodes, edges, pos, crossed_dict, None)
     param['temp'] = decreased_temperature
 
     return pos,param
 
-def execute_process(data,counter):
+def execute_process(data,counter,config):
     # F:\graphdrawingSW\Graph_Intersaction\python\examples\graph15.json
     # https://jacoblmiller.github.io/tum-gd-contest/tool.html
+
+    start_time = time.time()
+    start_time = float(int(start_time * 1000))
+    start_time /= 1000
 
     graph, nodes, edges, attributes, pos, \
         width, height = Helpers.data_process(data)
     pos_old = pos.copy()
+    initial_crossing_count = Helpers.check_total_silence(edges, pos)
 
     nwx.set_edge_attributes(graph, 1, 'weight')
     print(edges.__len__())
 
-    Helpers.initial_report_smart(edges, pos, graph)
     pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False)
-    Helpers.manual_prompt()
     pre_made_input = edges, graph, pos, 50, width, height
     default_temperature = 10
-    parameters = {"temp": 1, "step size": 2, "cooling rate" : 0.9,"transition weight": None, }
-    pos, temperature = ask_for_new_schema_SA2(edges, graph, pos, 100, width, height, None,parameters)
-    Helpers.check_identical(pos_old,pos)
+    temp = int(config['iteration'])
+    parameters = {"temp": 1, "step size": 2, "cooling rate" : 0.9,"iteration times":temp,"transition weight": None, }
+    iteration_times = parameters["iteration times"]
+    pos, temperature = ask_for_new_schema_SA2(edges, graph, pos, iteration_times, width, height, None,parameters)
+
+    processed_count = Helpers.check_total_silence(edges, pos)
 
     file_name = f'output{counter}'
-    save_file_direct(graph, pos, width, height,file_name)
+    save_file_direct(graph, pos, width, height,file_name,config)
 
 
-data_set = load_directory()
+    end_time = time.time()
+    end_time = float(int(end_time * 1000))
+    end_time /= 1000
+
+    delta = end_time - start_time
+    print(f"runtime for the graph: {delta} s")
+    return delta,initial_crossing_count,processed_count
+
+
+
+config = {}
+with open("config.txt", "r", encoding="utf-8") as file:
+    for line in file:
+        line = line.strip()
+        if line and "=" in line:
+            key, value = line.split("=", 1)
+            config[key.strip()] = value.strip()
+print(config)
+print(config['input'])
+print(config['iteration'])
+iteration = int(config['iteration'])
+print(type(iteration))
+
+data_set = load_directory(config)
 counter = 0
+
+report = {}
 for data in data_set:
     counter += 1
-    execute_process(data,counter)
+    time_used,initial_count,after_process_count = execute_process(data,counter,config)
+    graph_name = "Output_" + str(counter)
+    report[graph_name] = {}
+    report[graph_name]['initial crossing count'] = initial_count
+    report[graph_name]['after process crossing count'] = after_process_count
+    report[graph_name]['improvement'] = initial_count-after_process_count
+    report[graph_name]['time used'] = time_used
+
+
+with open(os.path.join(config['output'], "report.json"), 'w', encoding='utf-8') as file:
+    json.dump(report, file, indent=4, ensure_ascii=False)
+    print("Report saved")
 
 
