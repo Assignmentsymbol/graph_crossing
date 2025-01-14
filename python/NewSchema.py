@@ -82,7 +82,7 @@ def refill_new_crossings(crossed_edges_dict, node, edges, edges_of_the_node, pos
     diff2: dict[Any, set[Any]] = {edge: set() for edge in edges}
     for edge_1 in edges_of_the_node:
         for edge_2 in edges:
-            if Helpers.is_intersect(edge_1, edge_2, pos, True):
+            if Helpers.is_intersect(edge_1, edge_2, pos, True) >0:
                 crossed_edges_dict[edge_1].add(edge_2)
                 crossed_edges_dict[edge_2].add(edge_1)
                 diff2[edge_1].add(edge_2)
@@ -93,7 +93,7 @@ def refill_new_crossings(crossed_edges_dict, node, edges, edges_of_the_node, pos
 def initial_check(edges, pos, crossed_edges_dict):
     for edge_1 in edges:
         for edge_2 in [x for x in edges if x != edge_1]:
-            if Helpers.is_intersect(edge_1, edge_2, pos, True):
+            if Helpers.is_intersect(edge_1, edge_2, pos, True) >0:
                 crossed_edges_dict[edge_1].add(edge_2)
                 crossed_edges_dict[edge_2].add(edge_1)
     return
@@ -324,7 +324,8 @@ def random_move_on_cluster(positions: dict, worst_cluster, width, height):
     new_position = (random.randint(0, width), random.randint(0, height))
     if worst_cluster is None:
         print('no worst cluster--------------------')
-    random_node = random.choice(list(worst_cluster))
+    if worst_cluster != None:
+        random_node = random.choice(list(worst_cluster))
     print(f'worst cluster 0: {list(worst_cluster)}')
     # print("positions: " + positions.__str__())
     if new_position not in positions.values():
@@ -381,9 +382,9 @@ def random_release(positions: dict, graph, worst_cluster, width, height, edges, 
         edge = random_node,adj_node
         rever_edge = adj_node,random_node
         # too big
-        if Helpers.is_intersect(edge,edge1,pos_copy,True) or Helpers.is_intersect(rever_edge,edge1,pos_copy,True):
+        if Helpers.is_intersect(edge,edge1,pos_copy,True) == 1 or Helpers.is_intersect(rever_edge,edge1,pos_copy,True) == 1:
             count_e1 += 1
-        if Helpers.is_intersect(edge,edge2,pos_copy,True) or Helpers.is_intersect(rever_edge,edge1,pos_copy,True):
+        if Helpers.is_intersect(edge,edge2,pos_copy,True) == 1 or Helpers.is_intersect(rever_edge,edge1,pos_copy,True) == 1:
             count_e2 += 1
     # print(f'count e1: {count_e1} ------')
     # print(f'count e2: {count_e2} ------')
@@ -445,6 +446,7 @@ def ask_for_new_schema_SA(edges, graph, pos, times, width, height, crossed_dict,
         crossed_dict = initialize_crossed_dict(graph,edges, pos)
     # new_pos = pos
     if input_string == "y":
+        timeStart = time.time()
         pos,decreased_temperature,_ = simulate_annealing_exponential(edges, graph, pos, times,
                                                                    width, height,
                                                                    decreased_temperature,
@@ -454,6 +456,8 @@ def ask_for_new_schema_SA(edges, graph, pos, times, width, height, crossed_dict,
         Helpers.check_identical(old_copy, pos)
         check_degree_reusable(graph.nodes,edges,pos, crossed_dict,None)
         param['temp'] = decreased_temperature
+        timeEnd = time.time()
+        print(f"time delta: {timeEnd - timeStart}")
         pos,decreased_temperature = ask_for_new_schema_SA(edges, graph, pos, times, width, height, crossed_dict, param)
     elif input_string == "rp":
         Helpers.report_and_draw(graph, edges, pos, width, height)

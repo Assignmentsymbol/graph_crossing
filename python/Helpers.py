@@ -65,14 +65,18 @@ def is_intersect(edge1: tuple[str], edge2: tuple[str], pos: dict, silent: bool):
     e2p2 = Point(pos[edge2[1]][0], pos[edge2[1]][1])
 
     if not silent:
-        if doIntersect(e1p1, e1p2, e2p1, e2p2):
+        if doIntersect(e1p1, e1p2, e2p1, e2p2) == 1:
             print("Intersected")
         else:
             print("Not intersected")
-    if doIntersect(e1p1, e1p2, e2p1, e2p2):
-        return True
-    else:
-        return False
+    if doIntersect(e1p1, e1p2, e2p1, e2p2) == 1:
+        return 1
+    if doIntersect(e1p1, e1p2, e2p1, e2p2) == 2:
+        # print("Intersected colinearly.............")
+        # print(edge1,edge2)
+        return 2
+    if doIntersect(e1p1, e1p2, e2p1, e2p2) == 0:
+        return 0
 
 
 def load_file_hard():
@@ -177,7 +181,7 @@ def check_max_degree(edges, pos):
         max_Value = max(max_Value, local_max)
         local_max = 0
         for edge_2 in [x for x in edges if x != edge_1]:
-            if is_intersect(edge_1, edge_2, pos, True):
+            if is_intersect(edge_1, edge_2, pos, True) == 1:
                 total += 1
                 local_max += 1
                 if local_max > max_Value:
@@ -198,7 +202,7 @@ def check_max_degree_silence(edges, pos):
         max_Value = max(max_Value, local_max)
         local_max = 0
         for edge_2 in [x for x in edges if x != edge_1]:
-            if is_intersect(edge_1, edge_2, pos, True):
+            if is_intersect(edge_1, edge_2, pos, True) == 1:
                 total += 1
                 local_max += 1
                 if local_max > max_Value:
