@@ -18,7 +18,7 @@ Without IDE:
 1. Set up the same environment as above.
 2. Replace the two special fields i.e. <input directory absolute path> and <output directory absolute path> in the
 "config.txt" file to the corresponding ones.
-3. Place the input files such as 'graph1.json' in the input directory
+3. Place the input files such as 'graph1.json' in the input directory, make sure no other readable file exist in this directory such as 'report'.
 4. Run the script with python, the output files and a overall report file will be generated under the earlier given 
 output directory path.
 
