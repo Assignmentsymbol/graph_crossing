@@ -148,3 +148,4 @@ with open(os.path.join(config['output'], "report.json"), 'w', encoding='utf-8') 
     print("Report saved")
 
 
+\
