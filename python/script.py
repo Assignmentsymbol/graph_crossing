@@ -80,8 +80,6 @@ def execute_process(data,counter,config):
     # https://jacoblmiller.github.io/tum-gd-contest/tool.html
 
     start_time = time.time()
-    start_time = float(int(start_time * 1000))
-    start_time /= 1000
 
     graph, nodes, edges, attributes, pos, \
         width, height = Helpers.data_process(data)
@@ -106,12 +104,10 @@ def execute_process(data,counter,config):
 
 
     end_time = time.time()
-    end_time = float(int(end_time * 1000))
-    end_time /= 1000
-
     delta = end_time - start_time
-    print(f"runtime for the graph: {delta} s")
-    return delta,initial_crossing_count,processed_count
+    delta_trunc= float('{:.4f}'.format(delta))
+    print(f"runtime for the graph: {delta_trunc} s")
+    return delta_trunc,initial_crossing_count,processed_count
 
 
 
@@ -148,4 +144,3 @@ with open(os.path.join(config['output'], "report.json"), 'w', encoding='utf-8') 
     print("Report saved")
 
 
-\

@@ -1,20 +1,38 @@
 {
     "Output_1": {
-        "initial crossing count": 17.0,
-        "after process crossing count": 5.0,
-        "improvement": 12.0,
-        "time used": 0.14499998092651367
+        "initial crossing count": 14590.0,
+        "after process crossing count": 1194.0,
+        "improvement": 13396.0,
+        "time used": 4.4066
     },
     "Output_2": {
-        "initial crossing count": 86.0,
-        "after process crossing count": 84.0,
-        "improvement": 2.0,
-        "time used": 0.6059999465942383
+        "initial crossing count": 565.0,
+        "after process crossing count": 91.0,
+        "improvement": 474.0,
+        "time used": 0.6111
     },
     "Output_3": {
-        "initial crossing count": 26.0,
-        "after process crossing count": 23.0,
-        "improvement": 3.0,
-        "time used": 0.3250000476837158
+        "initial crossing count": 13330.0,
+        "after process crossing count": 1303.0,
+        "improvement": 12027.0,
+        "time used": 4.8463
+    },
+    "Output_4": {
+        "initial crossing count": 1361.0,
+        "after process crossing count": 147.0,
+        "improvement": 1214.0,
+        "time used": 1.0234
+    },
+    "Output_5": {
+        "initial crossing count": 468.0,
+        "after process crossing count": 37.0,
+        "improvement": 431.0,
+        "time used": 0.3462
+    },
+    "Output_6": {
+        "initial crossing count": 925.0,
+        "after process crossing count": 348.0,
+        "improvement": 577.0,
+        "time used": 0.767
     }
 }

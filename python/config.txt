@@ -1,5 +1,5 @@
-input=<input directory absolute path>
-output=<output directory absolute path>
+input=C:\Users\ASUS\Desktop\currentProjects\graph_crossing\python\input
+output=C:\Users\ASUS\Desktop\currentProjects\graph_crossing\python\output
 report=output
 silence=True
 iteration=100
