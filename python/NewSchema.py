@@ -201,11 +201,12 @@ def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
                 # new_pos, random_node = random_move_on_cluster(old_pos, worst_cluster, width, height)
             else:
                 # new_pos, random_node = random_move(old_pos, graph, width, height)
-                if new_pos is not None:
-                    old_pos = new_pos
-                #     not secure
-                new_pos, random_node = random_move_on_cluster(old_pos, worst_cluster, width, height)
-            #     issuable, position not updated
+                if new_pos is None:
+                    new_pos, random_node = random_move_on_cluster(old_pos, worst_cluster, width, height)
+                else:
+                    new_pos, random_node = random_move_on_cluster(new_pos, worst_cluster, width, height)
+                #     issuable, position not updated
+
 
             new_count, new_total, worst_cluster, crossed_edges_dict_new, backup, node_on_edge_found = check_degree_reusable(graph.nodes, edges,
                                                                                                         new_pos,
