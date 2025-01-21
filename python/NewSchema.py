@@ -15,8 +15,10 @@ import SimulateAnnealingTools
 
 def check_degree_reusable(nodes, edges, pos, crossed_edges_dict, last_moved_node):
     # 5t spent
+    # punishment dict
     edges = set(edges)
     backup = None
+    node_on_edge_found = False
     # print(edges)
     if  crossed_edges_dict is None:
         crossed_edges_dict: dict[Any, set[Any]] = {edge: set() for edge in edges}
@@ -31,7 +33,7 @@ def check_degree_reusable(nodes, edges, pos, crossed_edges_dict, last_moved_node
         # looking for work around
         edges_of_the_node = {edge for edge in edges if edge[0] == last_moved_node or edge[1] == last_moved_node}
         diff1 = remove_old_crossings(crossed_edges_dict,last_moved_node,edges,edges_of_the_node)
-        diff2 = refill_new_crossings(crossed_edges_dict,last_moved_node,edges,edges_of_the_node,pos)
+        diff2,node_on_edge_found = refill_new_crossings(crossed_edges_dict,last_moved_node,edges,edges_of_the_node,pos)
         backup = diff1,diff2
 
     sorted_edges = sorted(crossed_edges_dict.items(),key=lambda item: len(item[1]),reverse=True)
@@ -62,7 +64,7 @@ def check_degree_reusable(nodes, edges, pos, crossed_edges_dict, last_moved_node
     print('The maximum value of crossings in a single edge is: ' + max_crossing.__str__())
     print('The total number of the crossings is: ' + total.__str__())
 
-    return max_crossing,total,worst_cluster,crossed_edges_dict,backup
+    return max_crossing,total,worst_cluster,crossed_edges_dict,backup,node_on_edge_found
 
 
 
@@ -81,9 +83,12 @@ def remove_old_crossings(crossed_edges_dict, node, edges, edges_of_the_node):
 
 def refill_new_crossings(crossed_edges_dict, node, edges, edges_of_the_node, pos):
     diff2: dict[Any, set[Any]] = {edge: set() for edge in edges}
+    node_on_edge_found = False
     for edge_1 in edges_of_the_node:
         for edge_2 in edges:
-            if Helpers.is_intersect(edge_1, edge_2, pos, True):
+            if Helpers.is_intersect_adapted(edge_1, edge_2, pos, True) == -1:
+                node_on_edge_found = True
+            if Helpers.is_intersect_adapted(edge_1, edge_2, pos, True) != 0:
                 # assume the last time has no on-line(on-node is easier to avoid) detect on-line here
                 # if intersect type == 2 i.e. crossed on-line, announce for cancel or count the punishment and return
                 crossed_edges_dict[edge_1].add(edge_2)
@@ -91,7 +96,7 @@ def refill_new_crossings(crossed_edges_dict, node, edges, edges_of_the_node, pos
                 diff2[edge_1].add(edge_2)
                 diff2[edge_2].add(edge_1)
     #             return diff2, punishment
-    return diff2
+    return diff2, node_on_edge_found
 
 
 def initial_check(edges, pos, crossed_edges_dict):
@@ -217,6 +222,7 @@ def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
         weight_release_string = 0.1
         gradient = math.inf
         stuck = False
+        new_pos = None
         if i > 0:
             gradient_observer.append(oldest_count)
             if gradient_observer.__len__() == 10:
@@ -234,13 +240,14 @@ def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
         if i < times* 0.1 or decreased_temperature < initial_temperature * 0.05:
             step_size = step_size
             go_chaotic = True
+            node_on_edge_found = False
         for j in range(step_size):
             move_decider = random.random()
             pick_rd = move_decider < weight_rdm
             pick_rdwc = weight_rdm < move_decider < weight2_rdwc
             pick_release = move_decider > 0.9
             # new_pos,random_node = random_move(old_pos, graph, width, height)
-            old_count, old_total, worst_cluster, crossed_pos_dict, _ = check_degree_reusable(graph.nodes, edges, old_pos,
+            old_count, old_total, worst_cluster, crossed_pos_dict, _,node_on_edge_found = check_degree_reusable(graph.nodes, edges, old_pos,
                                                                                              crossed_pos_dict, None)
             # if pick_rd:  new_pos,random_node = random_move(old_pos, graph, width, height)
             # else: new_pos, random_node = random_move_on_cluster(old_pos, worst_cluster, width, height)
@@ -250,16 +257,22 @@ def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
             # if old_count < 100 and move_decider > 0.7 and old_total > 0 and go_chaotic:
             if j > 0 and oldest_count < 80:
                 step_size = 5
-            if stuck and move_decider > 0.95:
+            if stuck and move_decider > math.inf:
+                if new_pos is not None:
+                    old_pos = new_pos
                 new_pos, random_node = random_release(old_pos, graph, worst_cluster, width, height, edges, crossed_pos_dict)
                 # if step_size < 2:
                 #     step_size = 2
                 # new_pos, random_node = random_move_on_cluster(old_pos, worst_cluster, width, height)
             else:
                 # new_pos, random_node = random_move(old_pos, graph, width, height)
+                if new_pos is not None:
+                    old_pos = new_pos
+                #     not secure
                 new_pos, random_node = random_move_on_cluster(old_pos, worst_cluster, width, height)
+            #     issuable, position not updated
 
-            new_count, new_total, worst_cluster, crossed_edges_dict_new, backup = check_degree_reusable(graph.nodes, edges,
+            new_count, new_total, worst_cluster, crossed_edges_dict_new, backup, node_on_edge_found = check_degree_reusable(graph.nodes, edges,
                                                                                                         new_pos,
                                                                                                         crossed_pos_dict,
                                                                                                         random_node)
@@ -271,7 +284,7 @@ def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
                                       calculate_acceptance_probability_for_crossing(oldest_count,
                                                                                     new_count,decreased_temperature))
             backup_stack.append(backup)
-            if (oldest_count > new_count):
+            if (oldest_count > new_count) or node_on_edge_found:
                 break
 
 
@@ -279,7 +292,7 @@ def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
         # to compare with the bad move acc. probability
         # if random_decider == 0:
         #     random_decider = 0.5
-        if acceptance_probability > random_decider or new_count < oldest_count or (new_count == oldest_count and new_total <= oldest_total):
+        if not node_on_edge_found and (acceptance_probability > random_decider or new_count < oldest_count or (new_count == oldest_count and new_total <= oldest_total)):
             print("Updated--------------------------"+acceptance_probability.__str__()+"   "+random_decider.__str__())
             print(f"new count {new_count} with "
                   f" acc {acceptance_probability}! lucky enough? {acceptance_probability > random_decider}! better "
@@ -304,7 +317,7 @@ def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
         total = min(old_total, new_total)
     # print(".........SA circle terminated.........")
     print(f"worst cluster is : {worst_cluster}")
-    logger,_,_,_,_ = check_degree_reusable(graph.nodes, edges, old_pos, crossed_pos_dict, None)
+    logger,_,_,_,_,_ = check_degree_reusable(graph.nodes, edges, old_pos, crossed_pos_dict, None)
     #hopefully i get my code from last week right
     Helpers.check_identical(pos, old_pos)
     return old_pos, decreased_temperature, logger
@@ -326,8 +339,13 @@ def random_move_on_cluster(positions: dict, worst_cluster, width, height):
     """Transition API: Shouldn't edit the input pos; returns a tuple of pos, node"""
     pos_copy = positions.copy()
     new_position = (random.randint(0, width), random.randint(0, height))
+    while new_position in positions.values():
+        new_position = (random.randint(0, width), random.randint(0, height))
+
     if worst_cluster is None:
         print('no worst cluster--------------------')
+    if new_position in positions.values():
+        breakpoint()
     random_node = random.choice(list(worst_cluster))
     print(f'worst cluster 0: {list(worst_cluster)}')
     # print("positions: " + positions.__str__())

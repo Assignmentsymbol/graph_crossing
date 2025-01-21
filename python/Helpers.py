@@ -6,7 +6,7 @@ import random
 import NewSchema
 from playgrounds import KawaiiSpringAlgorithm
 import RandomizedCrossingMinimization
-from IntersectAlgorithm import Point
+from IntersectAlgorithm import Point, doIntersect_adapted
 from IntersectAlgorithm import doIntersect
 import RandomizedCrossingMinimization as rcm
 import os
@@ -73,6 +73,23 @@ def is_intersect(edge1: tuple[str], edge2: tuple[str], pos: dict, silent: bool):
         return True
     else:
         return False
+
+
+def is_intersect_adapted(edge1: tuple[str], edge2: tuple[str], pos: dict, silent: bool):
+    e1p1 = Point(pos[edge1[0]][0], pos[edge1[0]][1])
+    e1p2 = Point(pos[edge1[1]][0], pos[edge1[1]][1])
+    e2p1 = Point(pos[edge2[0]][0], pos[edge2[0]][1])
+    e2p2 = Point(pos[edge2[1]][0], pos[edge2[1]][1])
+
+    if not silent:
+        if doIntersect_adapted(e1p1, e1p2, e2p1, e2p2) == 1:
+            print("Intersected")
+        else:
+            print("Not intersected")
+
+    return doIntersect_adapted(e1p1, e1p2, e2p1, e2p2)
+
+
 
 
 def load_file_hard():

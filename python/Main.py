@@ -80,17 +80,19 @@ Helpers.manual_prompt()
 pre_made_input = edges, graph, pos, 50, width, height
 default_temperature = 10
 # 0.6 or 1.8, on g6
-parameters = {"temp": 2, "step size": 2, "cooling rate" : 0.9,"transition weight": None, }
+parameters = {"temp": 2, "step size": 3, "cooling rate" : 0.9,"transition weight": None, }
 pos, temperature = NewSchema.ask_for_new_schema_SA(edges, graph, pos, 100, width, height, None,parameters)
 # pos = AdaptedNXTool.ask_for_operation(graph, nodes, edges, attributes, pos, width, height,False)
 # pos = NewSchema.ask_for_new_schema(edges, graph, pos, 1000, width, height,None)
 Helpers.check_identical(pos_old,pos)
 count = 0
+
 for node1 in nodes:
     for node2 in nodes:
         if node2 != node1:
             if pos[node1] == pos[node2]:
                 print('overlapped')
+                print(f"{node1}, {node2}:{pos[node1]}=={pos[node2]}")
                 count += 1
 print(count)
 
