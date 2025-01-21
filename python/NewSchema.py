@@ -48,6 +48,7 @@ def check_degree_reusable(nodes, edges, pos, crossed_edges_dict, last_moved_node
     # print(type(edges))
     worst_cluster = {node3 for wedge in edges if wedge in crossed_edges_dict[worst_edge] or wedge in crossed_edges_dict[worst_edge2] for node3 in wedge}
     # need documentation
+    # += punishment↓
     max_crossing = crossed_edges_dict[worst_edge].__len__()
     # print(crossed_edges_dict[worst_edge])
     # print(worst_edge)
@@ -83,10 +84,13 @@ def refill_new_crossings(crossed_edges_dict, node, edges, edges_of_the_node, pos
     for edge_1 in edges_of_the_node:
         for edge_2 in edges:
             if Helpers.is_intersect(edge_1, edge_2, pos, True):
+                # assume the last time has no on-line(on-node is easier to avoid) detect on-line here
+                # if intersect type == 2 i.e. crossed on-line, announce for cancel or count the punishment and return
                 crossed_edges_dict[edge_1].add(edge_2)
                 crossed_edges_dict[edge_2].add(edge_1)
                 diff2[edge_1].add(edge_2)
                 diff2[edge_2].add(edge_1)
+    #             return diff2, punishment
     return diff2
 
 
