@@ -14,14 +14,16 @@ import SimulateAnnealingTools
 
 
 def check_degree_reusable(nodes, edges, pos, crossed_edges_dict, last_moved_node):
+    """Checking and reporting most of the useful information between moves, also make use of the information it reported
+     itself to improve the performance in the next call."""
     edges = set(edges)
     backup = None
     node_on_edge_found = False
 
     if  crossed_edges_dict is None:
+        # crossed_edges_dict: a dictionary of edge:{set of other edges that cross the edge} pairs. It's indeed a weird name.
         crossed_edges_dict: dict[Any, set[Any]] = {edge: set() for edge in edges}
         initial_check(edges,pos, crossed_edges_dict)
-        #backup
     elif last_moved_node is None:
         pass
     else:
@@ -31,6 +33,8 @@ def check_degree_reusable(nodes, edges, pos, crossed_edges_dict, last_moved_node
         backup = diff1,diff2
 
     sorted_edges = sorted(crossed_edges_dict.items(),key=lambda item: len(item[1]),reverse=True)
+    # !!!sorted_edges:= a 2-tuple of (edge,{set of other edges that crosses this edge}) sorted by how 'bad' they are such
+    # as the size of the set, usage:sorted[0][k] to get the k-th 'bad' edge.
     worst_edge = sorted_edges[0][0]
     worst_edge2 = worst_edge
 
@@ -38,6 +42,7 @@ def check_degree_reusable(nodes, edges, pos, crossed_edges_dict, last_moved_node
         worst_edge2 = sorted_edges[1][0]
 
     worst_cluster = {node3 for wedge in edges if wedge in crossed_edges_dict[worst_edge] or wedge in crossed_edges_dict[worst_edge2] for node3 in wedge}
+    # A stupid implementation.
 
     max_crossing = crossed_edges_dict[worst_edge].__len__()
 
@@ -51,6 +56,8 @@ def check_degree_reusable(nodes, edges, pos, crossed_edges_dict, last_moved_node
 
 
 def remove_old_crossings(crossed_edges_dict, node, edges, edges_of_the_node):
+    """returning the difference:= the nodes that are affected during the process.
+    This allows the program to revert the change later."""
     # edges_of_the_node = {edge for edge in edges if edge[0] == node or edge[1] == node}
     #back up here
     diff1: dict[Any, set[Any]] = {edge: set() for edge in edges}
@@ -64,6 +71,8 @@ def remove_old_crossings(crossed_edges_dict, node, edges, edges_of_the_node):
 
 
 def refill_new_crossings(crossed_edges_dict, node, edges, edges_of_the_node, pos):
+    """returning the difference:= the nodes that are affected during the process.
+        This allows the program to revert the change later."""
     diff2: dict[Any, set[Any]] = {edge: set() for edge in edges}
     node_on_edge_found = False
     for edge_1 in edges_of_the_node:
@@ -82,6 +91,7 @@ def refill_new_crossings(crossed_edges_dict, node, edges, edges_of_the_node, pos
 
 
 def initial_check(edges, pos, crossed_edges_dict):
+    """In case no information is collected."""
     for edge_1 in edges:
         for edge_2 in [x for x in edges if x != edge_1]:
             if Helpers.is_intersect(edge_1, edge_2, pos, True):
@@ -92,6 +102,7 @@ def initial_check(edges, pos, crossed_edges_dict):
 
 # the forced zone
 def compute_target_zone(pos, node, worst_edge_local, width, height):
+    """This is some other 'mechanism' as lottery draw"""
     disneyland = []
     x1 = pos[worst_edge_local[0]][0]
     y1 = pos[worst_edge_local[0]][1]
@@ -145,7 +156,7 @@ def compute_target_zone(pos, node, worst_edge_local, width, height):
 
 def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
                                    initial_temperature,crossed_pos_dict,step_size=1,logger=None,cooling_rate=0.95):
-    # crossed_pos_dict: a dictionary of edges, values are a set of edges that intersect some edge.
+    # Remark the name crossed_pos_dict: a dictionary of edges, values are a set of edges that intersect some edge.
     print("Start point of SA cycle------")
     old_pos = pos
     new_count = math.inf
@@ -182,6 +193,7 @@ def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
             step_size = step_size
             go_chaotic = True
             node_on_edge_found = False
+        #   Whenever this is True, we always revert the most current change.
         for j in range(step_size):
             move_decider = random.random()
             pick_rd = move_decider < weight_rdm
@@ -205,7 +217,7 @@ def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
                     new_pos, random_node = random_move_on_cluster(old_pos, worst_cluster, width, height)
                 else:
                     new_pos, random_node = random_move_on_cluster(new_pos, worst_cluster, width, height)
-                #     issuable, position not updated
+                #     ⬆ Could be written in some more elegant way, but this works.
 
 
             new_count, new_total, worst_cluster, crossed_edges_dict_new, backup, node_on_edge_found = check_degree_reusable(graph.nodes, edges,
@@ -256,7 +268,7 @@ def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
 
 
 def random_move(positions: dict, graph, width, height):
-    """Transition API: Shouldn't edit the input pos; returns a tuple of pos, node"""
+    """If used correctly it won't cause overlap"""
     pos_copy = positions.copy()
     new_position = (random.randint(0, width), random.randint(0, height))
     random_node = random.choice(list(graph.nodes))
@@ -267,7 +279,7 @@ def random_move(positions: dict, graph, width, height):
 
 
 def random_move_on_cluster(positions: dict, worst_cluster, width, height):
-    """Transition API: Shouldn't edit the input pos; returns a tuple of pos, node"""
+    """If used correctly it won't cause overlap"""
     pos_copy = positions.copy()
     new_position = (random.randint(0, width), random.randint(0, height))
     while new_position in positions.values():
