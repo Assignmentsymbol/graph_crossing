@@ -22,8 +22,8 @@ pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, w
 Helpers.manual_prompt()
 pre_made_input = edges, graph, pos, 50, width, height
 default_temperature = 10
-parameters = {"temp": 2, "step size": 3, "cooling rate" : 0.9,"transition weight": None, }
-pos, temperature = NewSchema.ask_for_new_schema_SA(edges, graph, pos, 100, width, height, None,parameters)
+parameters = {"temp": 12, "step size": 3, "cooling rate" : 0.9,"transition weight": None, }
+pos, temperature = NewSchema.ask_for_new_schema_SA(edges, graph, pos, 500, width, height, None,parameters)
 
 Helpers.check_identical(pos_old,pos)
 count = 0

@@ -51,7 +51,7 @@ def check_degree_reusable(nodes, edges, pos, crossed_edges_dict, last_moved_node
     print('The maximum value of crossings in a single edge is: ' + max_crossing.__str__())
     print('The total number of the crossings is: ' + total.__str__())
 
-    return max_crossing,total,worst_cluster,crossed_edges_dict,backup,node_on_edge_found
+    return max_crossing,total,worst_cluster,crossed_edges_dict,backup,node_on_edge_found, sorted_edges
 
 
 
@@ -199,11 +199,18 @@ def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
             pick_rd = move_decider < weight_rdm
             pick_rdwc = weight_rdm < move_decider < weight2_rdwc
             pick_release = move_decider > 0.9
-            old_count, old_total, worst_cluster, crossed_pos_dict, _,node_on_edge_found = check_degree_reusable(graph.nodes, edges, old_pos,
+            old_count, old_total, worst_cluster, crossed_pos_dict, _,node_on_edge_found ,sorted_edges = check_degree_reusable(graph.nodes, edges, old_pos,
                                                                                              crossed_pos_dict, None)
             # can be refactored
             if j > 0 and oldest_count < 80:
                 step_size = 5
+            if stuck:
+                stuck_level = 1
+                if gradient_observer.__len__() > 1:
+                    stuck_level = math,round(math.log(gradient_observer.__len__()))
+                if stuck_level >= sorted_edges.__len__():
+                    stuck_level = sorted_edges.__len__()
+                worst_cluster = expand_worst_cluster(sorted_edges,worst_cluster,stuck_level)
             if stuck and move_decider > math.inf:
                 if new_pos is not None:
                     old_pos = new_pos
@@ -220,7 +227,7 @@ def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
                 #     ⬆ Could be written in some more elegant way, but this works.
 
 
-            new_count, new_total, worst_cluster, crossed_edges_dict_new, backup, node_on_edge_found = check_degree_reusable(graph.nodes, edges,
+            new_count, new_total, worst_cluster, crossed_edges_dict_new, backup, node_on_edge_found ,sorted_edges = check_degree_reusable(graph.nodes, edges,
                                                                                                         new_pos,
                                                                                                         crossed_pos_dict,
                                                                                                         random_node)
@@ -262,9 +269,16 @@ def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
         decreased_temperature = SimulateAnnealingTools.get_decreased_temperature(decreased_temperature,cooling_rate)
         total = min(old_total, new_total)
     print(f"worst cluster is : {worst_cluster}")
-    logger,_,_,_,_,_ = check_degree_reusable(graph.nodes, edges, old_pos, crossed_pos_dict, None)
+    logger,_,_,_,_,_ ,sorted_edges = check_degree_reusable(graph.nodes, edges, old_pos, crossed_pos_dict, None)
     Helpers.check_identical(pos, old_pos)
     return old_pos, decreased_temperature, logger
+
+
+def expand_worst_cluster(sorted_edges,worst_cluster,stuck_level):
+    for i in range(stuck_level):
+        worst_cluster.add(sorted_edges[stuck_level][0])
+    return worst_cluster
+
 
 
 def random_move(positions: dict, graph, width, height):
