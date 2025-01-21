@@ -34,7 +34,7 @@ Helpers.is_intersect(edge1,edge2,pos,False)
 # plt.figure()
 # plt.axes().set_axis_on()
 nwx.draw_networkx(G,pos=pos,with_labels=True,node_color="red",node_size=1000,
-                  font_color="white",font_size=20,font_family="Times New Roman", font_weight="bold",width=3,edge_color="black")
+                  font_color="white",font_size=20, font_weight="bold",width=3,edge_color="black")
 
 plt.margins(0.2)
 

@@ -25,37 +25,12 @@ def manual_prompt():
     print("-----------------------------------------------------------------------------------------------------")
 
 
-# def show_grid(width,height):
-#     plt.grid('on')
-#     plt.axhline(0, color='black', linewidth=1)  # x axe
-#     plt.axvline(0, color='black', linewidth=1)
-#     # adding integer dots
-#     fig, ax = plt.subplots()
-#     display_width = ax.transData.transform([width, 0])[0]
-#     display_height = ax.transData.transform([height, 0])[0]
-#     for i in range(int(display_width)):
-#         inverted_i = ax.transData.inverted().transform([(i, -0.1)])[0]
-#         plt.text(inverted_i, -0.1, str(inverted_i), ha='center', va='center', color="blue")
-#     for j in range(int(display_height)):
-#         inverted_j = ax.transData.inverted().transform([(-0.1,j)])[0]
-#         plt.text(-0.1, inverted_j, str(inverted_j), ha='center', va='center', color="blue")
-#     plt.xlabel("X")
-#     plt.ylabel("Y")
-#     plt.title("Some drawing(coordinates are snapped to the grid)")
-
 
 def show_grid(width,height):
     plt.grid('on')
     plt.axhline(0, color='black', linewidth=1)  # x axe
     plt.axvline(0, color='black', linewidth=1)
-    # for i in range(-1, 20):
-    #     # adding integer dots
-    #     plt.text(i, -0.1, str(i), ha='center', va='center', color="blue")
-    #     plt.text(-0.3, i, str(i), ha='center', va='center', color="blue")
-    # trivial stuff
-    # plt.xlabel("X")
-    # plt.ylabel("Y")
-    # plt.title("Some drawing")
+
 
 
 def is_intersect(edge1: tuple[str], edge2: tuple[str], pos: dict, silent: bool):
@@ -327,7 +302,7 @@ def report_and_draw(graph, edges, new_pos, width, height):
     check_total(edges, new_pos)
     fig = plt.figure()
     nwx.draw_networkx(graph, pos=new_pos, with_labels=True, node_color="red", node_size=1,
-                      font_color="white", font_size=10, font_family="Times New Roman",
+                      font_color="white", font_size=10,
                       font_weight="bold", width=1, edge_color="black")
     plt.margins(0.2)
     show_grid(width, height)
@@ -343,7 +318,7 @@ def initial_report(edges, pos, graph,width, height):
     plt.figure()
     diameter = (width**2+height**2)**(1/2)
     nwx.draw_networkx(graph, pos=pos, with_labels=True, node_color="red", node_size=1,
-                      font_color="white", font_size=10, font_family="Times New Roman",
+                      font_color="white", font_size=10,
                       font_weight="bold", width=1, edge_color="black")
     plt.margins(0.2)
     show_grid(width, height)
@@ -361,7 +336,7 @@ def initial_report_smart(edges, pos, graph):
         check_total(edges, pos)
     plt.figure()
     nwx.draw_networkx(graph, pos=pos, with_labels=True, node_color="red", node_size=100,
-                      font_color="white", font_size=10, font_family="Times New Roman",
+                      font_color="white", font_size=10,
                       font_weight="bold", width=1, edge_color="black")
     plt.margins(0.2)
     # show_grid(width= 10, height=10)

@@ -1,5 +1,5 @@
-input=C:\Users\ASUS\Desktop\currentProjects\graph_crossing\python\input
-output=C:\Users\ASUS\Desktop\currentProjects\graph_crossing\python\output
+input=C:\Users\ASUS\Desktop\Current\graph_crossing\python\input
+output=C:\Users\ASUS\Desktop\Current\graph_crossing\python\output
 report=output
 silence=True
 iteration=100

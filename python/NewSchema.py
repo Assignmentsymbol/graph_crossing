@@ -14,51 +14,33 @@ import SimulateAnnealingTools
 
 
 def check_degree_reusable(nodes, edges, pos, crossed_edges_dict, last_moved_node):
-    # 5t spent
-    # punishment dict
     edges = set(edges)
     backup = None
     node_on_edge_found = False
-    # print(edges)
+
     if  crossed_edges_dict is None:
         crossed_edges_dict: dict[Any, set[Any]] = {edge: set() for edge in edges}
-        # edge:{edge,edge,edge}
         initial_check(edges,pos, crossed_edges_dict)
         #backup
     elif last_moved_node is None:
         pass
     else:
-        # crossed_edges_dict_copy = copy.deepcopy(crossed_edges_dict)
-        # crossed_edges_dict = crossed_edges_dict_copy
-        # looking for work around
         edges_of_the_node = {edge for edge in edges if edge[0] == last_moved_node or edge[1] == last_moved_node}
         diff1 = remove_old_crossings(crossed_edges_dict,last_moved_node,edges,edges_of_the_node)
         diff2,node_on_edge_found = refill_new_crossings(crossed_edges_dict,last_moved_node,edges,edges_of_the_node,pos)
         backup = diff1,diff2
 
     sorted_edges = sorted(crossed_edges_dict.items(),key=lambda item: len(item[1]),reverse=True)
-    # worst_edge = sorted(crossed_edges_dict.items(),key=lambda item: len(item[1]),reverse=True)[0][0]
     worst_edge = sorted_edges[0][0]
     worst_edge2 = worst_edge
 
     if sorted_edges[1].__len__() / sorted_edges[0].__len__() == 1:
         worst_edge2 = sorted_edges[1][0]
-    # breakpoint()
 
-    # this line needs doc
-    # print(type(crossed_edges_dict[worst_edge]))
-    # print(type(edges))
     worst_cluster = {node3 for wedge in edges if wedge in crossed_edges_dict[worst_edge] or wedge in crossed_edges_dict[worst_edge2] for node3 in wedge}
-    # need documentation
-    # += punishment↓
+
     max_crossing = crossed_edges_dict[worst_edge].__len__()
-    # print(crossed_edges_dict[worst_edge])
-    # print(worst_edge)
-    # print(crossed_edges_dict[worst_edge].__len__())
-    # print(sorted_edges[1][0])
-    # print(crossed_edges_dict[sorted_edges[1][0]].__len__())
-    # print(crossed_edges_dict)
-    # print(f'Crossed edges of the worst edge: {crossed_edges_dict[worst_edge]}')
+
     total = sum(len(value) for value in crossed_edges_dict.values())/2
     print('One edge with most crossings is: ' + worst_edge.__str__())
     print('The maximum value of crossings in a single edge is: ' + max_crossing.__str__())
@@ -90,12 +72,12 @@ def refill_new_crossings(crossed_edges_dict, node, edges, edges_of_the_node, pos
                 node_on_edge_found = True
             if Helpers.is_intersect_adapted(edge_1, edge_2, pos, True) != 0:
                 # assume the last time has no on-line(on-node is easier to avoid) detect on-line here
-                # if intersect type == 2 i.e. crossed on-line, announce for cancel or count the punishment and return
+                # if intersect type == -1 i.e. crossed on-line, announce for cancel or count the punishment and return
                 crossed_edges_dict[edge_1].add(edge_2)
                 crossed_edges_dict[edge_2].add(edge_1)
                 diff2[edge_1].add(edge_2)
                 diff2[edge_2].add(edge_1)
-    #             return diff2, punishment
+    #             return diff2, announcement(now)/punishment
     return diff2, node_on_edge_found
 
 
@@ -106,10 +88,6 @@ def initial_check(edges, pos, crossed_edges_dict):
                 crossed_edges_dict[edge_1].add(edge_2)
                 crossed_edges_dict[edge_2].add(edge_1)
     return
-
-
-def quasi_spring_movement():
-    return -1
 
 
 # the forced zone
@@ -165,54 +143,17 @@ def compute_target_zone(pos, node, worst_edge_local, width, height):
     return disneyland
 
 
-def get_trivial_energy():
-    pass
-
-
-def get_non_trivial_energy():
-    pass
-
-def get_diameter():
-    pass
-
-
-def new_process_testing(graph, edges, pos, width, height, times, crossed_pos_dict):
-    old_pos = pos.copy()
-    for i in range(times):
-        new_pos,random_node = random_move(old_pos,graph,width,height)
-        old_count,old_total,worst_cluster,crossed_pos_dict,_ = check_degree_reusable(graph.nodes,edges,old_pos, crossed_pos_dict ,None)
-        new_count,new_total,worst_cluster,crossed_edges_dict_new,backup = check_degree_reusable(graph.nodes, edges, new_pos,crossed_pos_dict,random_node)
-        print("------new_count is: " + str(new_count) + "-----------")
-        print("------old_count is: " + str(old_count)+ "-----------")
-        if  new_count <= old_count:
-            print(f"new count better-------iteration {i} terminated--------")
-            old_pos = new_pos
-            crossed_pos_dict = crossed_edges_dict_new
-        else:
-            print(f"old count better-------iteration {i} terminated--------")
-            for key in backup[1].keys():
-                if len(backup[1][key]) != 0:
-                    for edge in backup[1][key]:
-                        crossed_pos_dict[key].remove(edge)
-            for key in backup[0].keys():
-                if len(backup[0][key]) != 0:
-                    for edge in backup[0][key]:
-                        crossed_pos_dict[key].add(edge)
-    return old_pos,random_node
-
-
 def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
                                    initial_temperature,crossed_pos_dict,step_size=1,logger=None,cooling_rate=0.95):
+    # crossed_pos_dict: a dictionary of edges, values are a set of edges that intersect some edge.
     print("Start point of SA cycle------")
     old_pos = pos
-    # new_pos = pos.copy()
-    # old_count = Helpers.check_total(edges, old_pos)
     new_count = math.inf
     new_total = math.inf # new
     decreased_temperature = initial_temperature
     gradient_observer = []
     for i in range(times):
-        # default setting if need
+        # default settings
         acceptance_probability = None
         backup_stack = deque()
         worst_cluster = None
@@ -246,15 +187,9 @@ def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
             pick_rd = move_decider < weight_rdm
             pick_rdwc = weight_rdm < move_decider < weight2_rdwc
             pick_release = move_decider > 0.9
-            # new_pos,random_node = random_move(old_pos, graph, width, height)
             old_count, old_total, worst_cluster, crossed_pos_dict, _,node_on_edge_found = check_degree_reusable(graph.nodes, edges, old_pos,
                                                                                              crossed_pos_dict, None)
-            # if pick_rd:  new_pos,random_node = random_move(old_pos, graph, width, height)
-            # else: new_pos, random_node = random_move_on_cluster(old_pos, worst_cluster, width, height)
-            # else: new_pos, random_node = random_release(old_pos, graph, worst_cluster, width, height, edges, crossed_pos_dict)
-
-            # new_pos, random_node = random_move(old_pos, graph, width, height)
-            # if old_count < 100 and move_decider > 0.7 and old_total > 0 and go_chaotic:
+            # can be refactored
             if j > 0 and oldest_count < 80:
                 step_size = 5
             if stuck and move_decider > math.inf:
@@ -289,9 +224,7 @@ def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
 
 
         random_decider = random.random()
-        # to compare with the bad move acc. probability
-        # if random_decider == 0:
-        #     random_decider = 0.5
+
         if not node_on_edge_found and (acceptance_probability > random_decider or new_count < oldest_count or (new_count == oldest_count and new_total <= oldest_total)):
             print("Updated--------------------------"+acceptance_probability.__str__()+"   "+random_decider.__str__())
             print(f"new count {new_count} with "
@@ -315,10 +248,8 @@ def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
                             crossed_pos_dict[key].add(edge)
         decreased_temperature = SimulateAnnealingTools.get_decreased_temperature(decreased_temperature,cooling_rate)
         total = min(old_total, new_total)
-    # print(".........SA circle terminated.........")
     print(f"worst cluster is : {worst_cluster}")
     logger,_,_,_,_,_ = check_degree_reusable(graph.nodes, edges, old_pos, crossed_pos_dict, None)
-    #hopefully i get my code from last week right
     Helpers.check_identical(pos, old_pos)
     return old_pos, decreased_temperature, logger
 
@@ -328,7 +259,6 @@ def random_move(positions: dict, graph, width, height):
     pos_copy = positions.copy()
     new_position = (random.randint(0, width), random.randint(0, height))
     random_node = random.choice(list(graph.nodes))
-    # print("positions: " + positions.__str__())
     if new_position not in positions.values():
         print("position: " + new_position.__str__() + " , " + str(random_node))
         pos_copy[random_node] = new_position
@@ -348,7 +278,6 @@ def random_move_on_cluster(positions: dict, worst_cluster, width, height):
         breakpoint()
     random_node = random.choice(list(worst_cluster))
     print(f'worst cluster 0: {list(worst_cluster)}')
-    # print("positions: " + positions.__str__())
     if new_position not in positions.values():
         print("position: " + new_position.__str__() + " , " + str(random_node))
         pos_copy[random_node] = new_position
@@ -379,24 +308,19 @@ def random_release(positions: dict, graph, worst_cluster, width, height, edges, 
     pos_copy = positions.copy()
     # flat_worst_cluster = {x for edge in worst_cluster for x in edge}
     random_node = random.choice(list(worst_cluster))
-    # print("positions: " + positions.__str__())
-    # dict edge:(edges)
     adjacency = [n for n in graph.neighbors(random_node)]
     temp = random.choice(adjacency)
     random_edge = temp,random_node
-    t0 = round(time.time(),5)
     if random_edge not in edges:
         random_edge = random_node, temp
     if crossed_pos_dict[random_edge].__len__() == 0:
         return pos_copy, random_node
-    t1 = round(time.time(),5)
 
     edge1 = random.choice(list(crossed_pos_dict[random_edge]))
     edge2 = random.choice(list(crossed_pos_dict[random_edge]))
     # can be improved
     count_e1 = 0
     count_e2 = 0
-    t2 = round(time.time(),5)
     # should be neighbors
 
     for adj_node in adjacency:
@@ -407,50 +331,20 @@ def random_release(positions: dict, graph, worst_cluster, width, height, edges, 
             count_e1 += 1
         if Helpers.is_intersect(edge,edge2,pos_copy,True) or Helpers.is_intersect(rever_edge,edge1,pos_copy,True):
             count_e2 += 1
-    # print(f'count e1: {count_e1} ------')
-    # print(f'count e2: {count_e2} ------')
-    t3 = round(time.time(),5)
+
     go_e1 = count_e1 > count_e2
-    # can be improved
     if go_e1:
         e1_side = compute_target_zone(pos_copy, random_node, edge1, width, height)
         # prioritize here
         slot = e1_side[0]
         if slot not in positions.values():
-            # print("position: " + slot.__str__() + " , " + str(random_node))
             pos_copy[random_node] = slot
     else:
         e2_side = compute_target_zone(pos_copy, random_node, edge2, width, height)
         slot = e2_side[0]
         if slot not in positions.values():
-            # print("position: " + slot.__str__() + " , " + str(random_node))
             pos_copy[random_node] = slot
-    t4 = round(time.time(),5)
     return pos_copy, random_node
-
-
-
-
-
-def ask_for_new_schema(edges, graph, pos, times, width, height, crossed_dict):
-    old_copy = pos.copy()
-    new_pos = pos
-    input_string = input("Do you want to perform a new schema?[y/n]")
-    if input_string == "n":
-        return pos
-    if crossed_dict is None:
-        crossed_dict = initialize_crossed_dict(graph,edges, pos)
-    # new_pos = pos
-    if input_string == "y":
-        pos,random_node = new_process_testing(graph, edges, pos, width, height, times, crossed_dict)
-        print(".........optimization circle terminated.........")
-        draw(graph, edges, pos, width, height)
-        Helpers.check_identical(old_copy, pos)
-        check_degree_reusable(graph.nodes,edges,pos, crossed_dict,None)
-        pos = ask_for_new_schema(edges, graph, pos, times, width, height,crossed_dict)
-    elif input_string == "rp":
-        Helpers.report_and_draw(graph, edges, pos, width, height)
-    return pos
 
 
 def ask_for_new_schema_SA(edges, graph, pos, times, width, height, crossed_dict, param):
@@ -479,7 +373,6 @@ def ask_for_new_schema_SA(edges, graph, pos, times, width, height, crossed_dict,
         pos,decreased_temperature = ask_for_new_schema_SA(edges, graph, pos, times, width, height, crossed_dict, param)
     elif input_string == "rp":
         Helpers.report_and_draw(graph, edges, pos, width, height)
-    #     return cross dict
     return pos,param
 
 
@@ -494,13 +387,7 @@ def draw(graph, edges, new_pos, width, height):
     diameter = (width**2+height**2)**(1/2)
     fig = plt.figure()
     networkx.draw_networkx(graph, pos=new_pos, with_labels=True, node_color="red", node_size=(0/diameter),
-                      font_color="blue", font_size=10, font_family="Times New Roman",
+                      font_color="blue", font_size=10,
                       font_weight="bold", width=1, edge_color="black")
     plt.margins(0.2)
     plt.show()
-
-
-    # plt.pause(5)
-    # plt.close(fig)
-    # plt.draw()
-    # plt.show()

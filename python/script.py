@@ -11,8 +11,6 @@ import Helpers
 import NewSchema
 
 def save_file_direct(graph: networkx.Graph, pos, width, height, filename, config):
-    # current_directory = os.getcwd()
-    # data_testing = {"node": {"id": 1, "di": 2}}
     storage_directory = config['output']
     data_out = {}
     nodes = []
@@ -30,14 +28,12 @@ def save_file_direct(graph: networkx.Graph, pos, width, height, filename, config
 
     with open(os.path.join(storage_directory, f"{filename}.json"), 'w', encoding='utf-8') as file:
         json.dump(data_out, file, indent=4, ensure_ascii=False)
-        # print("total: " + check_total(graph.edges, pos).__str__())
         print("File saved")
 
 
 def load_directory(config):
     input_directory = config['input']
     data_set = []
-    # current_directory = os.getcwd()
     target_directory = input_directory
 
 
@@ -45,7 +41,6 @@ def load_directory(config):
         if filename.endswith('.json'):
             file_path = os.path.join(target_directory, filename)
             data_set.append(load_file(file_path))
-    print(data_set)
     return data_set
 
 
@@ -76,9 +71,6 @@ def ask_for_new_schema_SA2(edges, graph, pos, times, width, height, crossed_dict
     return pos,param
 
 def execute_process(data,counter,config):
-    # F:\graphdrawingSW\Graph_Intersaction\python\examples\graph15.json
-    # https://jacoblmiller.github.io/tum-gd-contest/tool.html
-
     start_time = time.time()
 
     graph, nodes, edges, attributes, pos, \
@@ -89,9 +81,7 @@ def execute_process(data,counter,config):
     nwx.set_edge_attributes(graph, 1, 'weight')
     print(edges.__len__())
 
-    pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False)
-    pre_made_input = edges, graph, pos, 50, width, height
-    default_temperature = 10
+    pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False,True)
     temp = int(config['iteration'])
     parameters = {"temp": 1, "step size": 2, "cooling rate" : 0.9,"iteration times":temp,"transition weight": None, }
     iteration_times = parameters["iteration times"]
@@ -110,7 +100,7 @@ def execute_process(data,counter,config):
     return delta_trunc,initial_crossing_count,processed_count
 
 
-
+# entry
 config = {}
 with open("config.txt", "r", encoding="utf-8") as file:
     for line in file:
@@ -118,11 +108,8 @@ with open("config.txt", "r", encoding="utf-8") as file:
         if line and "=" in line:
             key, value = line.split("=", 1)
             config[key.strip()] = value.strip()
-print(config)
-print(config['input'])
-print(config['iteration'])
+
 iteration = int(config['iteration'])
-print(type(iteration))
 
 data_set = load_directory(config)
 counter = 0

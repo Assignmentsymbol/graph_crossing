@@ -1,38 +1,38 @@
 {
     "Output_1": {
         "initial crossing count": 14590.0,
-        "after process crossing count": 1194.0,
-        "improvement": 13396.0,
-        "time used": 4.4066
+        "after process crossing count": 13973.0,
+        "improvement": 617.0,
+        "time used": 7.719
     },
     "Output_2": {
         "initial crossing count": 565.0,
-        "after process crossing count": 91.0,
-        "improvement": 474.0,
-        "time used": 0.6111
+        "after process crossing count": 87.0,
+        "improvement": 478.0,
+        "time used": 0.2484
     },
     "Output_3": {
         "initial crossing count": 13330.0,
-        "after process crossing count": 1303.0,
-        "improvement": 12027.0,
-        "time used": 4.8463
+        "after process crossing count": 918.0,
+        "improvement": 12412.0,
+        "time used": 2.2741
     },
     "Output_4": {
         "initial crossing count": 1361.0,
-        "after process crossing count": 147.0,
-        "improvement": 1214.0,
-        "time used": 1.0234
+        "after process crossing count": 356.0,
+        "improvement": 1005.0,
+        "time used": 0.4831
     },
     "Output_5": {
         "initial crossing count": 468.0,
-        "after process crossing count": 37.0,
-        "improvement": 431.0,
-        "time used": 0.3462
+        "after process crossing count": 295.0,
+        "improvement": 173.0,
+        "time used": 0.5583
     },
     "Output_6": {
         "initial crossing count": 925.0,
-        "after process crossing count": 348.0,
-        "improvement": 577.0,
-        "time used": 0.767
+        "after process crossing count": 866.0,
+        "improvement": 59.0,
+        "time used": 1.182
     }
 }

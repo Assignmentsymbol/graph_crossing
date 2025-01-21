@@ -92,6 +92,7 @@ def doIntersect(p1, q1, p2, q2):
     return False
 
 def doIntersect_adapted(p1, q1, p2, q2):
+    """also announce for different types of intersections"""
     if len((p1, q1, p2, q2)) != len(set((p1, q1, p2, q2))):
         return False
     # Find the 4 orientations required for

@@ -61,7 +61,6 @@ def calculate_acceptance_probability_for_crossing(old_energy,new_energy, tempera
         # if temperature == 0:
         #     return 0
         accp_p = math.e ** ((-1) * energy_diff / temperature)
-        # print(f"acceptance p is: {accp_p}")
         return accp_p
 
 
@@ -69,7 +68,6 @@ def get_decreased_temperature(temperature,cooling_rate=0.95):
     print("current temperature is: " + temperature.__str__())
     if temperature < 0.05:
         return 0.05
-        # print(f"Degenerated to random mountain climb with p = {temperature}")
         # return 0.01
     return cooling_rate * temperature
 
@@ -133,15 +131,11 @@ def compute_estimation_x(T, transitions):
     numerator = 0
     denominator = 0
     for s in transitions:
-        # print("log compute esti: " + s[0].__str__() +"  " + s[1].__str__())
-        # print("log exponent: "+ (-1 * s[0] / T).__str__())
         numerator += math.exp(-1 * s[0] / T)
         denominator += math.exp(-1 * s[1] / T)
     return numerator / denominator
 
 
 def process_t(Tn, X_0, estimation, p):
-    # print(f"estimation is: {estimation}")
     temp = Tn * ((math.log(estimation) / math.log(X_0)) ** (1 / p))
-    # print(f"temp is: {temp}")
     return temp
