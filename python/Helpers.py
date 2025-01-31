@@ -1,7 +1,11 @@
+import math
+
 import networkx
 import networkx as nwx
 import matplotlib.pyplot as plt
 import random
+
+import numpy as np
 
 import NewSchema
 from playgrounds import KawaiiSpringAlgorithm
@@ -578,6 +582,89 @@ def trivial_snap(nodes,pos,width,height):
                     goto_closest_spot(node2,pos)
 
     return pos_int
+
+
+def is_out_of_scope(node,pos,width_interval,height_interval):
+    if (pos[node][0] > width_interval[1] or pos[node][1] > height_interval[1] or pos[node][0] < width_interval[0]
+            or pos[node][1] < height_interval[0]):
+        return True
+    return False
+
+
+def matching_snap(nodes,pos,width_interval,height_interval):
+    out_of_scope = [x for x in nodes if is_out_of_scope(x,pos,width_interval,height_interval)]
+    print(width_interval, height_interval)
+    if out_of_scope.__len__()==0:
+        print('nothing out of scope in this area')
+        return -1
+    print(f"one out of scopes is with {pos[out_of_scope[0]][0]} , {pos[out_of_scope[0]][1]}")
+    available_grid = []
+    g2 = nwx.Graph()
+    for x in range(width_interval[0],width_interval[1]+1):
+        for y in range(width_interval[0],width_interval[1]+1):
+            if (x, y) not in pos.values():
+                available_grid.append((x, y))
+    if out_of_scope.__len__() * available_grid.__len__()>1000000:
+        print('matching too big')
+        return -1
+    for node in out_of_scope:
+        for (x, y) in available_grid:
+            distance = math.dist(pos[node], (x, y))
+            g2.add_edge(node, (x, y), weight=distance)
+
+    nwx.max_weight_matching(g2)
+    for node in out_of_scope:
+        for ed in g2.edges:
+            if node == ed[0]:
+                pos[node] = ed[1]
+    return 1
+
+
+def allocation(nodes,pos,width,height):
+    scope = ([],[])
+    for node in nodes:
+        if pos[node][0] > width:
+            scope[0].append(pos[node][0])
+        if pos[node][1] > height:
+            scope[1].append(pos[node][1])
+    # print(scope[0])
+    # breakpoint()
+    scope = max(scope[0]),max(scope[1])
+    diff = scope[0]-width,scope[1] - height
+    right_partition_point_1 = height+(1/3)*diff[0]
+    right_partition_point_2 = height+(2/3)*diff[0]
+    upper_partition_point_1 = height+(1/3)*diff[1]
+    upper_partition_point_2 = height + (2 / 3) * diff[1]
+    print()
+
+    out_of_scope_right_1 = [x for x in nodes if right_partition_point_1 > pos[x][0] > height]
+    out_of_scope_right_2 = [x for x in nodes if upper_partition_point_2 > pos[x][0] > right_partition_point_1]
+    out_of_scope_right_3 = [x for x in nodes if pos[x][0] > right_partition_point_2]
+    print(out_of_scope_right_1,out_of_scope_right_2,out_of_scope_right_3)
+
+    out_of_scope_upper_1 = [x for x in nodes if upper_partition_point_1 > pos[x][1] > height]
+    out_of_scope_upper_2 = [x for x in nodes if upper_partition_point_2 > pos[x][1] > upper_partition_point_1]
+    out_of_scope_upper_3 = [x for x in nodes if pos[x][1] > upper_partition_point_2]
+    print(scope[1],upper_partition_point_2)
+    return (out_of_scope_right_1, out_of_scope_right_2, out_of_scope_right_3, out_of_scope_upper_1, out_of_scope_upper_2,
+            out_of_scope_upper_3)
+
+
+def fast_matching_snap(nodes,pos,width,height):
+    (out_of_scope_right_1, out_of_scope_right_2, out_of_scope_right_3,
+     out_of_scope_upper_1, out_of_scope_upper_2, out_of_scope_upper_3) = allocation(nodes,pos,width,height)
+    width_interval_1 = 0,round((1/3)*width)
+    width_interval_2 = round((1/3)*width),round((2/3)*width)
+    width_interval_3 = round((2/3)*width),width
+    height_interval_1 = 0,round((1/3)*height)
+    height_interval_2 = round((1/3)*height),round((2/3)*height)
+    height_interval_3 = round((2/3)*height),height
+    matching_snap(out_of_scope_right_1,pos,width_interval_1,(0,height))
+    matching_snap(out_of_scope_right_2,pos,width_interval_2,(0,height))
+    matching_snap(out_of_scope_right_3,pos,width_interval_3,(0,height))
+    matching_snap(out_of_scope_upper_1,pos,(0,width),height_interval_1)
+    matching_snap(out_of_scope_upper_2,pos,(0,width),height_interval_2)
+    matching_snap(out_of_scope_upper_3,pos,(0,width),height_interval_3)
 
 
 def check_overlap(nodes,pos):

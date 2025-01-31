@@ -1,11 +1,15 @@
+import math
+
 import networkx
 import networkx as nwx
 import numpy as np
 import scipy
+from networkx.classes import Graph
 
 import AdaptedNXTool
 import Helpers
 import NewSchema
+from Helpers import report_and_draw
 
 # F:\graphdrawingSW\Graph_Intersaction\python\examples\graph15.json
 # https://jacoblmiller.github.io/tum-gd-contest/tool.html
@@ -25,22 +29,24 @@ Helpers.initial_report_smart(edges, pos, graph)
 # print(pos.__len__())
 #
 # # AdaptedNXTool.planar_check(graph, nodes, edges, attributes, pos, width, height,True)
-# _, pos = nwx.check_planarity(graph)  # graph: networkx.Graph; pos: dict{node:(x,y)}
+# _, pos1 = nwx.check_planarity(graph)  # graph: networkx.Graph; pos: dict{node:(x,y)}
 # pos = nwx.combinatorial_embedding_to_pos(pos, False)
 # print(pos)
 # print(pos.__len__())
 # pos = AdaptedNXTool.bcc_decomposition(graph,edges,pos,width,height,True)
 
-pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False)
+# pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False)
+
 # Helpers.report_and_draw(graph, edges,pos, width, height)
 # Helpers.check_total(edges, pos)
-# input("press anything to continue")
-# print('beeep------------')
-# is_planar, pos = nwx.check_planarity(graph)
-# print(is_planar)
-# if is_planar:
-#     pos = nwx.combinatorial_embedding_to_pos(pos, False)
-# print(pos)
+print('beeep------------')
+is_planar, embedding = nwx.check_planarity(graph)
+print(is_planar)
+if is_planar:
+    pos = nwx.combinatorial_embedding_to_pos(embedding, False)
+print(pos)
+input('++')
+# Helpers.report_and_draw(graph, edges,pos, width, height)
 # not_at_grid = []
 # occupied = []
 # available = []
@@ -64,6 +70,18 @@ pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, w
 #         distance =np.linalg.norm(np.array(coordinate) - np.array((pos[node][0],pos[node][1])))
 #         edges_matching.append((coordinate,node,{'weight': distance}))
 # matching = nwx.Graph()
+
+pos[1] = (9999,9999)
+# input('cut')
+# Helpers.save_file(graph, pos, width, height)
+# input('saved')
+# Helpers.matching_snap(nodes,pos,width,height)
+Helpers.fast_matching_snap(nodes,pos,width,height)
+
+
+input('cut')
+Helpers.save_file(graph, pos, width, height)
+input('saved')
 # matching.add_edges_from(edges_matching)
 # matching = nwx.max_weight_matching(matching)
 # print(f"matching is {matching}")
