@@ -21,8 +21,7 @@ pos_old = pos.copy()
 # print(pos)
 nwx.set_edge_attributes(graph, 1, 'weight')
 print(edges.__len__())
-# Helpers.initial_report(edges, pos, graph, width, height)
-#graph 11+ are decomposition-able
+#graph 11+ are decomposition-worth
 Helpers.initial_report_smart(edges, pos, graph)
 # Helpers.check_total(edges, pos)
 # print(pos)
@@ -39,58 +38,22 @@ Helpers.initial_report_smart(edges, pos, graph)
 
 # Helpers.report_and_draw(graph, edges,pos, width, height)
 # Helpers.check_total(edges, pos)
-print('beeep------------')
-is_planar, embedding = nwx.check_planarity(graph)
-print(is_planar)
-if is_planar:
-    pos = nwx.combinatorial_embedding_to_pos(embedding, False)
-print(pos)
-input('++')
-# Helpers.report_and_draw(graph, edges,pos, width, height)
-# not_at_grid = []
-# occupied = []
-# available = []
-# edges_matching = []
-# pos[403] = 1095.5,345.8
-# for node in pos:
-#     if not (float(pos[node][0]).is_integer() and float(pos[node][1]).is_integer()):
-#         not_at_grid.append(node)
-#     else:
-#         occupied.append((pos[node][0],pos[node][1]))
-# print(pos.__len__())
-# print(not_at_grid)
-# print(occupied.__len__())
-# print(pos.values())
-# grid_slots = {(x, y) for x in range(width + 1) for y in range(height + 1)}
-# for coordinate in grid_slots:
-#     if coordinate not in occupied:
-#         available.append(coordinate)
-# for node in not_at_grid:
-#     for coordinate in available:
-#         distance =np.linalg.norm(np.array(coordinate) - np.array((pos[node][0],pos[node][1])))
-#         edges_matching.append((coordinate,node,{'weight': distance}))
-# matching = nwx.Graph()
 
-pos[1] = (9999,9999)
+# print('beeep------------')
+# is_planar, embedding = nwx.check_planarity(graph)
+# print(is_planar)
+# if is_planar:
+#     pos = nwx.combinatorial_embedding_to_pos(embedding, False)
+# print(pos)
+# input('++')
+
+
+# pos[1] = (9999,9999)
+# Helpers.fast_matching_snap(nodes,pos,width,height,None,None)
 # input('cut')
 # Helpers.save_file(graph, pos, width, height)
 # input('saved')
-# Helpers.matching_snap(nodes,pos,width,height)
-Helpers.fast_matching_snap(nodes,pos,width,height)
 
-
-input('cut')
-Helpers.save_file(graph, pos, width, height)
-input('saved')
-# matching.add_edges_from(edges_matching)
-# matching = nwx.max_weight_matching(matching)
-# print(f"matching is {matching}")
-# for coordinate,node in matching:
-#     pos[node] = coordinate
-# print(pos)
-# print('beeep------------')
-# print(width,height)
-# Helpers.save_file(graph, pos, width, height)
 
 # temperature = SimulateAnnealingTools.calculate_initial_temperature(width, height, 20, 0.5, 0.2, 0.005, edges, pos, graph)
 # print(f"--------Initial temperature is: {temperature}")

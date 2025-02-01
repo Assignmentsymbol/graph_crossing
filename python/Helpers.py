@@ -601,7 +601,7 @@ def matching_snap(nodes,pos,width_interval,height_interval):
     available_grid = []
     g2 = nwx.Graph()
     for x in range(width_interval[0],width_interval[1]+1):
-        for y in range(width_interval[0],width_interval[1]+1):
+        for y in range(height_interval[0],height_interval[1]+1):
             if (x, y) not in pos.values():
                 available_grid.append((x, y))
     if out_of_scope.__len__() * available_grid.__len__()>1000000:
@@ -620,7 +620,7 @@ def matching_snap(nodes,pos,width_interval,height_interval):
     return 1
 
 
-def allocation(nodes,pos,width,height):
+def partition(nodes, pos, width, height):
     scope = ([],[])
     for node in nodes:
         if pos[node][0] > width:
@@ -650,9 +650,90 @@ def allocation(nodes,pos,width,height):
             out_of_scope_upper_3)
 
 
-def fast_matching_snap(nodes,pos,width,height):
+def partition_interval(interval):
+    partition_point = round((interval[0]+interval[1])/2)+1
+    return (interval[0],partition_point),(partition_point,interval[1])
+
+
+def get_grids(pos,width,interval):
+    available_grids = []
+    for x in range(interval[0],interval[1]+1):
+        for y in range(width + 1):
+            if (x, y) not in pos.values():
+                available_grids.append((x, y))
+    return available_grids
+
+
+def compute_scope(nodes,pos,height):
+    scope = []
+    for node in nodes:
+        if pos[node][1] > height:
+            scope.append(pos[node][1])
+
+    return 0,max(scope)
+
+
+def fast_matching_snap(nodes,pos,width,height,domain,codomain):
+    if domain is None:
+        domain = compute_scope(nodes,pos,height)
+    if codomain is None:
+        codomain = 0,height
+
+    out_of_scope_upper_interval,out_of_scope_lower_interval = partition_interval(domain)
+    available_grids_upper_interval, available_grids_lower_interval = partition_interval(codomain)
+
+    free_spots_count1 = width*(available_grids_upper_interval[1] - available_grids_upper_interval[0])
+    free_spots_count2 = width*(available_grids_lower_interval[1] - available_grids_lower_interval[0])
+    for n in nodes:
+        if available_grids_upper_interval[1] > pos[n][1] > available_grids_upper_interval[0]:
+            free_spots_count1 -= 1
+        if available_grids_lower_interval[1] > pos[n][1] > available_grids_lower_interval[0]:
+            free_spots_count2 -= 1
+    branch1 = [x for x in nodes if out_of_scope_upper_interval[1] > pos[x][1] >= out_of_scope_upper_interval[0]]
+    domain_order1 = branch1.__len__()
+    branch2 = [x for x in nodes if out_of_scope_lower_interval[1] > pos[x][1] >= out_of_scope_lower_interval[0]]
+    domain_order2 = branch2.__len__()
+    terminate = free_spots_count1 < domain_order1 or free_spots_count2 < domain_order2
+
+    if codomain[1]-codomain[0] <=4 or terminate:
+        available_grids = get_grids(pos,width,codomain)
+        out_of_scope = [x for x in nodes if domain[1]>= pos[x][1] > domain[0] and not (width >= pos[x][0] >= 0
+                                                                                       and height >= pos[x][1] >= 0)]
+        if out_of_scope.__len__() == 0:
+            return -1
+
+        g2 = nwx.Graph()
+        for x in range(width+1):
+            for y in range(codomain[0], codomain[1] + 1):
+                if (x, y) not in pos.values():
+                    available_grids.append((x, y))
+        if out_of_scope.__len__() * available_grids.__len__() > 1000000:
+            print('matching too big')
+            return -1
+        for node in out_of_scope:
+            for (x, y) in available_grids:
+                distance = math.dist(pos[node], (x, y))
+                g2.add_edge(node, (x, y), weight=distance)
+
+        nwx.max_weight_matching(g2)
+        for node in out_of_scope:
+            for ed in g2.edges:
+                if node == ed[0]:
+                    pos[node] = ed[1]
+        print(out_of_scope)
+        print(terminate)
+
+        return 1
+    fast_matching_snap(nodes,pos,width,height,out_of_scope_upper_interval,available_grids_upper_interval)
+    fast_matching_snap(nodes,pos,width,height,out_of_scope_lower_interval,available_grids_lower_interval)
+
+
+
+
+
+def d3_matching_snap(nodes,pos,width,height):
     (out_of_scope_right_1, out_of_scope_right_2, out_of_scope_right_3,
-     out_of_scope_upper_1, out_of_scope_upper_2, out_of_scope_upper_3) = allocation(nodes,pos,width,height)
+     out_of_scope_upper_1, out_of_scope_upper_2, out_of_scope_upper_3) = partition(nodes, pos, width, height)
     width_interval_1 = 0,round((1/3)*width)
     width_interval_2 = round((1/3)*width),round((2/3)*width)
     width_interval_3 = round((2/3)*width),width
