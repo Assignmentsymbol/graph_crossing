@@ -1,4 +1,5 @@
 import math
+from itertools import combinations
 
 import networkx
 import networkx as nwx
@@ -573,15 +574,17 @@ def trivial_snap(nodes,pos,width,height):
     # min_x = min([x for x,y in pos_int.values()])
     # min_y = min([y for x,y in pos_int.values()])
     # pos_int = {node: (x+abs(min_x) ,y+abs(min_y)) for node,(x,y) in pos_int.values()}
-    for node1 in list(nodes):
-        if check_overlap(nodes,pos):
-            return pos_int
-        else:
-            for node2 in list(nodes):
-                if pos_int[node1] == pos_int[node2]:
-                    goto_closest_spot(node2,pos)
-
+    clean = True
+    for node in nodes:
+        if has_overlap(nodes,pos):
+            clean = False
+    if clean:
+        return pos_int
+    for n1,n2 in combinations(nodes,2):
+        if pos_int[n1] == pos_int[n2]:
+            goto_closest_spot(n2,pos,width,height)
     return pos_int
+
 
 
 def is_out_of_scope(node,pos,width_interval,height_interval):
@@ -748,44 +751,43 @@ def d3_matching_snap(nodes,pos,width,height):
     matching_snap(out_of_scope_upper_3,pos,(0,width),height_interval_3)
 
 
-def check_overlap(nodes,pos):
+def has_overlap(nodes,pos):
     if len(pos) == len(set(tuple(val) for val in pos.values())):
         print("no duplicates-------")
-        return True
+        return False
     else:
         print("have duplicates-------")
-        return False
+        return True
 
 
-def goto_closest_spot(node,pos):
-    for i in range(0,len(pos)):
-        if pos[node] + (i,0) not in pos.items():
+def goto_closest_spot(node,pos,width,height):
+    is_valid = lambda a, b, x: x > a and x > b
+    for i in range(width*height):
+        if pos[node] + (i,0) not in pos.values() and is_valid(width,height,i):
             pos[node] = pos[node] + (i,0)
             return
-        if pos[node] + (-i,0) not in pos.items():
+        if pos[node] + (-i,0) not in pos.values() and is_valid(width,height,i):
             pos[node] = pos[node] + (-i,0)
             return
-        if pos[node] + (0,i) not in pos.items():
+        if pos[node] + (0,i) not in pos.values() and is_valid(width,height,i):
             pos[node] = pos[node] + (0,i)
             return
-        if pos[node] + (0,-i) not in pos.items():
+        if pos[node] + (0,-i) not in pos.values() and is_valid(width,height,i):
             pos[node] = pos[node] + (0,-i)
             return
-        if pos[node] + (i,i) not in pos.items():
+        if pos[node] + (i,i) not in pos.values() and is_valid(width,height,i):
             pos[node] = pos[node] + (i,i)
             return
-        if pos[node] + (i,-i) not in pos.items():
+        if pos[node] + (i,-i) not in pos.values() and is_valid(width,height,i):
             pos[node] = pos[node] + (i,-i)
             return
-        if pos[node] + (-i,-i) not in pos.items():
+        if pos[node] + (-i,-i) not in pos.values() and is_valid(width,height,i):
             pos[node] = pos[node] + (-i,-i)
             return
-        if pos[node] + (-i,i) not in pos.items():
+        if pos[node] + (-i,i) not in pos.values() and is_valid(width,height,i):
             pos[node] = pos[node] + (-i,i)
             return
-        else: i += 1
-        if i - len(pos) < 2:
-            print("seems no place.......")
+
 
 
 

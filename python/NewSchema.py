@@ -198,6 +198,19 @@ def expand_worst_cluster(sorted_edges,worst_cluster,stuck_level):
     return worst_cluster
 
 
+def rotation(positions: dict, worst_cluster, width, height):
+    """Transition API: Shouldn't edit the input pos; returns a tuple of pos, node"""
+    pos_copy = positions.copy()
+    worst_cluster_list = list(worst_cluster)
+    points = np.array([pos_copy[x] for x in worst_cluster_list])
+    angle_rad = np.radians(90)
+    rotation_matrix = np.array([
+        [np.cos(angle_rad), -np.sin(angle_rad)],
+        [np.sin(angle_rad), np.cos(angle_rad)]
+    ])
+    points = points @ rotation_matrix.T
+    pass
+
 
 def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
                                    initial_temperature,crossed_pos_dict,step_size=1,logger=None,cooling_rate=0.95):

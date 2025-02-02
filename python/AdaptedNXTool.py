@@ -57,7 +57,6 @@ def fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height,dra
     if draw:
         Helpers.report_and_draw(graph,edges,pos,width,height)
     print((pos.values()))
-    print((pos.values()))
     # Helpers.report_and_draw(graph, edges, pos, width, height)
     return pos
 
