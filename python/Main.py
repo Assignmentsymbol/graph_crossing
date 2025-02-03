@@ -34,8 +34,11 @@ Helpers.initial_report_smart(edges, pos, graph)
 # print(pos.__len__())
 # pos = AdaptedNXTool.bcc_decomposition(graph,edges,pos,width,height,True)
 
-pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False)
-
+# pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False,20,True)
+# pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False,20,True)
+# pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False,20,True)
+pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False,20,False)
+# Helpers.check_max_degree(edges, pos)
 # Helpers.report_and_draw(graph, edges,pos, width, height)
 # Helpers.check_total(edges, pos)
 
@@ -62,11 +65,26 @@ pre_made_input = edges, graph, pos, 50, width, height
 default_temperature = 10
 # 0.6 or 1.8, on g6
 parameters = {"temp": 2, "step size": 3, "cooling rate" : 0.9,"transition weight": None, }
-pos, temperature = NewSchema.ask_for_new_schema_SA(edges, graph, pos, 500, width, height, None,parameters)
+# Helpers.check_total(edges, pos)
+pos, temperature, c_count = NewSchema.ask_for_new_schema_SA(edges, graph, pos, 100, width, height, None,parameters,None)
 # pos = AdaptedNXTool.ask_for_operation(graph, nodes, edges, attributes, pos, width, height,False)
 # pos = NewSchema.ask_for_new_schema(edges, graph, pos, 1000, width, height,None)
 Helpers.check_identical(pos_old,pos)
 count = 0
+
+#
+if input('Another spring layout?: ') == 'y':
+    pos_old = pos.copy()
+    pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False, 20,True)
+    new_c_count = Helpers.check_max_degree_silence(edges, pos)
+    if c_count is None:
+        print(f'no c count, do it anyways..then: {new_c_count}')
+    elif c_count < new_c_count:
+        print(f'old {c_count} better.. than new {new_c_count}')
+        pos = pos_old
+    else:
+        print(f'new {new_c_count} better than old {c_count}..')
+
 
 for node1 in nodes:
     for node2 in nodes:
@@ -75,7 +93,7 @@ for node1 in nodes:
                 print('overlapped')
                 print(f"{node1}, {node2}:{pos[node1]}=={pos[node2]}")
                 count += 1
-print(count)
+print(f"overlap count: {count}")
 
 # Helpers.check_total(edges,pos)
 

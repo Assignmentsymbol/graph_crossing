@@ -48,15 +48,17 @@ def planar_check(graph, nodes, edges, attributes, pos, width, height,draw):
         # Helpers.save_file(graph, pos, width, height)
     pass
 
-def fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height,draw):
-    pos = networkx.fruchterman_reingold_layout(graph,pos=pos,iterations=20,scale=min(width,height)*(1/2),center=(width/2,height/2))
-    print(f'width: {width}, height: {height}, center: {width/2, height/2}')
-    print(f'edge size: {len(edges)}')
+def fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height,draw,iteration,silence):
+    pos = networkx.fruchterman_reingold_layout(graph,pos=pos,iterations=iteration,scale=min(width,height)*(1/2),center=(width/2,height/2))
+    if not silence:
+        print(f'width: {width}, height: {height}, center: {width/2, height/2}')
+        print(f'edge size: {len(edges)}')
     # Helpers.report_and_draw(graph,edges,pos,width,height)
     pos = Helpers.trivial_snap(graph.nodes,pos,width,height)
     if draw:
         Helpers.report_and_draw(graph,edges,pos,width,height)
-    print((pos.values()))
+    if not silence:
+        print((pos.values()))
     # Helpers.report_and_draw(graph, edges, pos, width, height)
     return pos
 
@@ -66,7 +68,7 @@ def ask_for_operation(graph, nodes, edges, attributes, pos, width, height,draw):
     if user_input == "n":
         return pos
     if user_input=='f':
-        pos = fruchterman_reingold(graph,nodes,edges,attributes,pos,width,height,draw)
+        pos = fruchterman_reingold(graph,nodes,edges,attributes,pos,width,height,draw,20,False)
         Helpers.check_identical(old_copy, pos)
         if draw:
             networkx.draw_networkx(graph, pos=pos, with_labels=True, node_color="red", node_size=1,

@@ -1,5 +1,6 @@
 import math
 from itertools import combinations
+from pydoc import Helper
 
 import networkx
 import networkx as nwx
@@ -570,21 +571,19 @@ def ask_for_trivial_simulate_annealing(edges, graph, pos:dict, width, height, ti
 # {nodes:[{id,x,y},],edges:[{s,t}],width,height}
 
 def trivial_snap(nodes,pos,width,height):
+    # bad at small graph
     pos_int = {node: (round(x), round(y)) for node, (x, y) in pos.items()}
     # min_x = min([x for x,y in pos_int.values()])
     # min_y = min([y for x,y in pos_int.values()])
     # pos_int = {node: (x+abs(min_x) ,y+abs(min_y)) for node,(x,y) in pos_int.values()}
-    clean = True
-    for node in nodes:
-        if has_overlap(nodes,pos):
-            clean = False
-    if clean:
+    if not has_overlap(nodes, pos_int):
         return pos_int
+    # otherwise, handle
+    # breakpoint()
     for n1,n2 in combinations(nodes,2):
         if pos_int[n1] == pos_int[n2]:
-            goto_closest_spot(n2,pos,width,height)
+            goto_closest_spot(n2,pos_int,width,height)
     return pos_int
-
 
 
 def is_out_of_scope(node,pos,width_interval,height_interval):
@@ -607,7 +606,7 @@ def matching_snap(nodes,pos,width_interval,height_interval):
         for y in range(height_interval[0],height_interval[1]+1):
             if (x, y) not in pos.values():
                 available_grid.append((x, y))
-    if out_of_scope.__len__() * available_grid.__len__()>1000000:
+    if out_of_scope.__len__() * available_grid.__len__()>100000:
         print('matching too big')
         return -1
     for node in out_of_scope:
@@ -667,18 +666,22 @@ def get_grids(pos,width,interval):
     return available_grids
 
 
-def compute_scope(nodes,pos,height):
+def compute_scope(nodes,pos,width,height):
     scope = []
     for node in nodes:
-        if pos[node][1] > height:
+        if pos[node][1] > height or pos[node][0] > width:
             scope.append(pos[node][1])
-
+    if scope.__len__()==0:
+        return 0,"-1"
     return 0,max(scope)
 
 
 def fast_matching_snap(nodes,pos,width,height,domain,codomain):
     if domain is None:
-        domain = compute_scope(nodes,pos,height)
+        domain = compute_scope(nodes,pos,width,height)
+        if domain[1] == "-1":
+            breakpoint()
+            return -1
     if codomain is None:
         codomain = 0,height
 
@@ -699,6 +702,7 @@ def fast_matching_snap(nodes,pos,width,height,domain,codomain):
     terminate = free_spots_count1 < domain_order1 or free_spots_count2 < domain_order2
 
     if codomain[1]-codomain[0] <=4 or terminate:
+        breakpoint()
         available_grids = get_grids(pos,width,codomain)
         out_of_scope = [x for x in nodes if domain[1]>= pos[x][1] > domain[0] and not (width >= pos[x][0] >= 0
                                                                                        and height >= pos[x][1] >= 0)]
@@ -752,42 +756,46 @@ def d3_matching_snap(nodes,pos,width,height):
 
 
 def has_overlap(nodes,pos):
-    if len(pos) == len(set(tuple(val) for val in pos.values())):
-        print("no duplicates-------")
+    if len(nodes) == len(set(tuple(val) for val in pos.values())):
+        print("no on-node overlaps----------")
         return False
     else:
-        print("have duplicates-------")
+        print(f"have on-node overlaps : {len(nodes) - len(set(tuple(val) for val in pos.values()))}-------")
         return True
 
 
 def goto_closest_spot(node,pos,width,height):
-    is_valid = lambda a, b, x: x > a and x > b
+    is_valid = lambda a, b, x, y: x < a and y < b
+    add = lambda a, b: tuple(x + y for x, y in zip(a, b))
     for i in range(width*height):
-        if pos[node] + (i,0) not in pos.values() and is_valid(width,height,i):
-            pos[node] = pos[node] + (i,0)
+        if add(pos[node],(i,0)) not in pos.values() and is_valid(width,height,*add(pos[node],(i,0))):
+            pos[node] = add(pos[node],(i,0))
+            if pos[node][0] > width or pos[node][1] > height:
+                breakpoint()
             return
-        if pos[node] + (-i,0) not in pos.values() and is_valid(width,height,i):
-            pos[node] = pos[node] + (-i,0)
+        if add(pos[node],(-i,0)) not in pos.values() and is_valid(width,height,*add(pos[node],(-i,0))):
+            pos[node] = add(pos[node],(-i,0))
             return
-        if pos[node] + (0,i) not in pos.values() and is_valid(width,height,i):
-            pos[node] = pos[node] + (0,i)
+        if add(pos[node],(0,i)) not in pos.values() and is_valid(width,height,*add(pos[node],(0,i))):
+            pos[node] = add(pos[node],(0,i))
             return
-        if pos[node] + (0,-i) not in pos.values() and is_valid(width,height,i):
-            pos[node] = pos[node] + (0,-i)
+        if add(pos[node],(0,-i)) not in pos.values() and is_valid(width,height,*add(pos[node],(0,-i))):
+            pos[node] = add(pos[node],(0,-i))
             return
-        if pos[node] + (i,i) not in pos.values() and is_valid(width,height,i):
-            pos[node] = pos[node] + (i,i)
+        if add(pos[node],(i,i)) not in pos.values() and is_valid(width,height,*add(pos[node],(i,i))):
+            pos[node] = add(pos[node],(i,i))
             return
-        if pos[node] + (i,-i) not in pos.values() and is_valid(width,height,i):
-            pos[node] = pos[node] + (i,-i)
+        if add(pos[node],(i,-i)) not in pos.values() and is_valid(width,height,*add(pos[node],(i,-i))):
+            pos[node] = add(pos[node],(i,-i))
             return
-        if pos[node] + (-i,-i) not in pos.values() and is_valid(width,height,i):
-            pos[node] = pos[node] + (-i,-i)
+        if add(pos[node],(-i,-i)) not in pos.values() and is_valid(width,height,*add(pos[node],(-i,-i))):
+            pos[node] = add(pos[node],(-i,-i))
             return
-        if pos[node] + (-i,i) not in pos.values() and is_valid(width,height,i):
-            pos[node] = pos[node] + (-i,i)
+        if add(pos[node],(-i,i)) not in pos.values() and is_valid(width,height,*add(pos[node],(-i,i))):
+            pos[node] = add(pos[node],(-i,i))
             return
 
 
-
+def avoid_on_edge():
+    pass
 

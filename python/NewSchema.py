@@ -222,6 +222,8 @@ def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
     new_total = math.inf # new
     decreased_temperature = initial_temperature
     gradient_observer = []
+    embedding_backup = []
+    e_backup_probability = 0
     for i in range(times):
         # default setting if need
         acceptance_probability = None
@@ -234,6 +236,11 @@ def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
         gradient = math.inf
         stuck = False
         new_pos = None
+        if e_backup_probability > 0.3:
+            temp = {"pos":pos,"crossed":crossed_pos_dict,"step_size":step_size,
+                    "cooling_rate":cooling_rate,"width":width,"height":height}
+            embedding_backup.append(temp)
+
         if i > 0:
             gradient_observer.append(oldest_count)
             if gradient_observer.__len__() == 10:
@@ -337,6 +344,10 @@ def simulate_annealing_exponential(edges, graph, pos:dict, times, width, height,
     #hopefully i get my code from last week right
     Helpers.check_identical(pos, old_pos)
     return old_pos, decreased_temperature, logger
+
+def reset():
+    pass
+
 
 
 def random_move(positions: dict, graph, width, height):
@@ -469,7 +480,7 @@ def ask_for_new_schema(edges, graph, pos, times, width, height, crossed_dict):
     return pos
 
 
-def ask_for_new_schema_SA(edges, graph, pos, times, width, height, crossed_dict, param):
+def ask_for_new_schema_SA(edges, graph, pos, times, width, height, crossed_dict, param,c_count):
     old_copy = pos.copy()
     new_pos = pos
     temperature = param["temp"]
@@ -478,12 +489,13 @@ def ask_for_new_schema_SA(edges, graph, pos, times, width, height, crossed_dict,
     decreased_temperature = temperature
     input_string = input("Do you want to perform simulated annealing?[y/n]")
     if input_string == "n":
-        return pos,decreased_temperature
+        print(f"Local crossing count is : {c_count}")
+        return pos,decreased_temperature,c_count
     if crossed_dict is None:
         crossed_dict = initialize_crossed_dict(graph,edges, pos)
     # new_pos = pos
     if input_string == "y":
-        pos,decreased_temperature,_ = simulate_annealing_exponential(edges, graph, pos, times,
+        pos,decreased_temperature,c_count = simulate_annealing_exponential(edges, graph, pos, times,
                                                                    width, height,
                                                                    decreased_temperature,
                                                                    crossed_dict, step_size,None)
@@ -492,11 +504,11 @@ def ask_for_new_schema_SA(edges, graph, pos, times, width, height, crossed_dict,
         Helpers.check_identical(old_copy, pos)
         check_degree_reusable(graph.nodes,edges,pos, crossed_dict,None)
         param['temp'] = decreased_temperature
-        pos,decreased_temperature = ask_for_new_schema_SA(edges, graph, pos, times, width, height, crossed_dict, param)
+        pos,decreased_temperature,c_count = ask_for_new_schema_SA(edges, graph, pos, times, width, height, crossed_dict, param,c_count)
     elif input_string == "rp":
         Helpers.report_and_draw(graph, edges, pos, width, height)
     #     return cross dict
-    return pos,param
+    return pos,param, c_count
 
 
 def initialize_crossed_dict(graph, edges, pos):
