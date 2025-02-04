@@ -1,13 +1,16 @@
 import math
 from itertools import combinations
 from pydoc import Helper
+from random import randint
 
 import networkx
 import networkx as nwx
 import matplotlib.pyplot as plt
 import random
 
+import numpy
 import numpy as np
+from sympy.integrals.intpoly import cross_product
 
 import NewSchema
 from playgrounds import KawaiiSpringAlgorithm
@@ -90,6 +93,7 @@ def is_intersect_adapted(edge1: tuple[str], edge2: tuple[str], pos: dict, silent
     if not silent:
         if doIntersect_adapted(e1p1, e1p2, e2p1, e2p2) == 1:
             print("Intersected")
+            doIntersect_adapted(e1p1, e1p2, e2p1, e2p2)
         else:
             print("Not intersected")
 
@@ -186,7 +190,7 @@ def perform_operation_for_single_change(positions: dict, graph: networkx.Graph):
 
 
 def check_total_quick(edges, pos):
-    maxc,_ = NewSchema.check_degree_reusable(None,edges,pos,None,None)
+    maxc,_ = NewSchema.check_degree_reusable(None, edges, pos, None, None, None)
     print('The max number of the crossings is: ' + maxc.__str__())
     return maxc
 
@@ -586,6 +590,66 @@ def trivial_snap(nodes,pos,width,height):
     return pos_int
 
 
+def resolve_on_edge(nodes,edges,pos,width,height):
+    is_range_valid = lambda a, b, x, y: 0< x < a and 0 < y < b
+    add = lambda a, b: tuple(x + y for x, y in zip(a, b))
+    safe = False
+    count = 0
+    while not safe or count > 0:
+        count = 0
+        for edge1,edge2 in combinations(edges,2):
+            node = None
+            safe = (count == 0)
+
+            if is_intersect_adapted(edge1,edge2,pos,True) == -3:
+                node = edge1[0]
+                safe = False
+                count += 1
+            if is_intersect_adapted(edge1, edge2, pos, True) == -4:
+                node = edge1[1]
+                safe = False
+                count += 1
+
+            if is_intersect_adapted(edge1, edge2, pos, True) == -1:
+                node = edge2[0]
+                safe = False
+                count += 1
+
+            if is_intersect_adapted(edge1, edge2, pos, True) == -2:
+                node = edge2[1]
+                safe = False
+                count += 1
+
+            if node is not None:
+                i = randint(0,width)
+                j = randint(0,height)
+                pool = list({(i, j), (i, -j), (-i, -j), (j, i), (-j, -i), (j, -i), (-i, j), (-j, i)})
+                offset1 = randint(0, 4)
+                offset2 = randint(0, 4)
+                pick = random.choice(pool)
+                pick_copy = pick
+                pick = add(pick, (offset1, offset2))
+                solved = False
+                while not solved and pool.__len__() > 0:
+                    if (add(pos[node], pick) not in pos.values() and is_range_valid(width, height, *add(pos[node], pick))
+                            and not on_segment_any(node,add(pos[node],pick),nodes,pos,edges)):
+                        pos[node] = add(pos[node], pick)
+                        solved = True
+                        if pos[node][0] > width or pos[node][1] > height:
+                            breakpoint()
+                    else:
+                        pool.remove(pick_copy)
+                        if pool.__len__() > 0:
+                            offset1 = randint(0, 3)
+                            offset2 = randint(0, 3)
+                            pick = random.choice(pool)
+                            pick_copy = pick[0], pick[1]
+                            pick = add(pick, (offset1, offset2))
+
+
+
+
+
 def is_out_of_scope(node,pos,width_interval,height_interval):
     if (pos[node][0] > width_interval[1] or pos[node][1] > height_interval[1] or pos[node][0] < width_interval[0]
             or pos[node][1] < height_interval[0]):
@@ -702,7 +766,6 @@ def fast_matching_snap(nodes,pos,width,height,domain,codomain):
     terminate = free_spots_count1 < domain_order1 or free_spots_count2 < domain_order2
 
     if codomain[1]-codomain[0] <=4 or terminate:
-        breakpoint()
         available_grids = get_grids(pos,width,codomain)
         out_of_scope = [x for x in nodes if domain[1]>= pos[x][1] > domain[0] and not (width >= pos[x][0] >= 0
                                                                                        and height >= pos[x][1] >= 0)]
@@ -737,7 +800,6 @@ def fast_matching_snap(nodes,pos,width,height,domain,codomain):
 
 
 
-
 def d3_matching_snap(nodes,pos,width,height):
     (out_of_scope_right_1, out_of_scope_right_2, out_of_scope_right_3,
      out_of_scope_upper_1, out_of_scope_upper_2, out_of_scope_upper_3) = partition(nodes, pos, width, height)
@@ -764,36 +826,75 @@ def has_overlap(nodes,pos):
         return True
 
 
+def on_segment_any(node,new_pos_of_node,nodes,pos,edges):
+    pool = [x for x in edges if node not in edges]
+    for edge in pool:
+        dir_edge = np.array(edge)
+        dir_new_position = np.array((edge[0]-new_pos_of_node[0],edge[1]-new_pos_of_node[1]))
+        co_linear =  numpy.cross(dir_edge,dir_new_position) == 0
+        lower_x = min(pos[edge[0]][0],pos[edge[1]][0])
+        upper_x = max(pos[edge[0]][0],pos[edge[1]][0])
+        lower_y = min(pos[edge[0]][1],pos[edge[1]][1])
+        upper_y = max(pos[edge[0]][1],pos[edge[1]][1])
+        inside = (lower_x <= new_pos_of_node[0] <= upper_x) and (lower_y <= new_pos_of_node[1] <= upper_y)
+        if inside and co_linear:
+            return True
+    return False
+
+
+
 def goto_closest_spot(node,pos,width,height):
     is_valid = lambda a, b, x, y: x < a and y < b
     add = lambda a, b: tuple(x + y for x, y in zip(a, b))
-    for i in range(width*height):
-        if add(pos[node],(i,0)) not in pos.values() and is_valid(width,height,*add(pos[node],(i,0))):
-            pos[node] = add(pos[node],(i,0))
-            if pos[node][0] > width or pos[node][1] > height:
-                breakpoint()
-            return
-        if add(pos[node],(-i,0)) not in pos.values() and is_valid(width,height,*add(pos[node],(-i,0))):
-            pos[node] = add(pos[node],(-i,0))
-            return
-        if add(pos[node],(0,i)) not in pos.values() and is_valid(width,height,*add(pos[node],(0,i))):
-            pos[node] = add(pos[node],(0,i))
-            return
-        if add(pos[node],(0,-i)) not in pos.values() and is_valid(width,height,*add(pos[node],(0,-i))):
-            pos[node] = add(pos[node],(0,-i))
-            return
-        if add(pos[node],(i,i)) not in pos.values() and is_valid(width,height,*add(pos[node],(i,i))):
-            pos[node] = add(pos[node],(i,i))
-            return
-        if add(pos[node],(i,-i)) not in pos.values() and is_valid(width,height,*add(pos[node],(i,-i))):
-            pos[node] = add(pos[node],(i,-i))
-            return
-        if add(pos[node],(-i,-i)) not in pos.values() and is_valid(width,height,*add(pos[node],(-i,-i))):
-            pos[node] = add(pos[node],(-i,-i))
-            return
-        if add(pos[node],(-i,i)) not in pos.values() and is_valid(width,height,*add(pos[node],(-i,i))):
-            pos[node] = add(pos[node],(-i,i))
-            return
+
+    for i in range(width):
+        # +1?
+        for j in range(min(width + 1, height + 1)):
+            pool = list({(i, j), (i, -j), (-i, -j), (j, i), (-j, -i), (j, -i), (-i, j), (-j, i)})
+            offset1 = randint(0, 3)
+            offset2 = randint(0, 3)
+            pick = random.choice(pool)
+            pick_copy = pick[0],pick[1]
+            pick = add(pick, (offset1, offset2))
+            solved = False
+            count = 0
+            while not solved and pool.__len__() > 0:
+                if add(pos[node], pick) not in pos.values() and is_valid(width, height, *add(pos[node], pick)):
+                    pos[node] = add(pos[node], pick)
+                    solved = True
+                    if pos[node][0] > width or pos[node][1] > height:
+                        breakpoint()
+                    return
+                else:
+                    pool.remove(pick_copy)
+                    if pool.__len__() > 0:
+                        offset1 = randint(0, 3)
+                        offset2 = randint(0, 3)
+                        pick = random.choice(pool)
+                        pick_copy = pick[0], pick[1]
+                        pick = add(pick, (offset1, offset2))
+
+                # if add(pos[node],(-i,0)) not in pos.values() and is_valid(width,height,*add(pos[node],(-i,0))):
+            #     pos[node] = add(pos[node],(-i,0))
+            #     return
+            # if add(pos[node],(0,i)) not in pos.values() and is_valid(width,height,*add(pos[node],(0,i))):
+            #     pos[node] = add(pos[node],(0,i))
+            #     return
+            # if add(pos[node],(0,-i)) not in pos.values() and is_valid(width,height,*add(pos[node],(0,-i))):
+            #     pos[node] = add(pos[node],(0,-i))
+            #     return
+            # if add(pos[node],(i,i)) not in pos.values() and is_valid(width,height,*add(pos[node],(i,i))):
+            #     pos[node] = add(pos[node],(i,i))
+            #     return
+            # if add(pos[node],(i,-i)) not in pos.values() and is_valid(width,height,*add(pos[node],(i,-i))):
+            #     pos[node] = add(pos[node],(i,-i))
+            #     return
+            # if add(pos[node],(-i,-i)) not in pos.values() and is_valid(width,height,*add(pos[node],(-i,-i))):
+            #     pos[node] = add(pos[node],(-i,-i))
+            #     return
+            # if add(pos[node],(-i,i)) not in pos.values() and is_valid(width,height,*add(pos[node],(-i,i))):
+            #     pos[node] = add(pos[node],(-i,i))
+
 
 
 def avoid_on_edge():

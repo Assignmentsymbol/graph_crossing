@@ -70,7 +70,7 @@ def ask_for_new_schema_SA2(edges, graph, pos, times, width, height, crossed_dict
                                                                              crossed_dict, step_size, None)
     print(".........optimization circle terminated.........")
     Helpers.check_identical(old_copy, pos)
-    NewSchema.check_degree_reusable(graph.nodes, edges, pos, crossed_dict, None)
+    NewSchema.check_degree_reusable(graph.nodes, edges, pos, crossed_dict, None, None)
     param['temp'] = decreased_temperature
 
     return pos,param

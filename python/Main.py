@@ -1,4 +1,6 @@
 import math
+import time
+from itertools import combinations
 
 import networkx
 import networkx as nwx
@@ -23,21 +25,26 @@ nwx.set_edge_attributes(graph, 1, 'weight')
 print(edges.__len__())
 #graph 11+ are decomposition-worth
 Helpers.initial_report_smart(edges, pos, graph)
+# change the name of it
 # Helpers.check_total(edges, pos)
 # print(pos)
 # print(pos.__len__())
-#
-# # AdaptedNXTool.planar_check(graph, nodes, edges, attributes, pos, width, height,True)
-# _, pos1 = nwx.check_planarity(graph)  # graph: networkx.Graph; pos: dict{node:(x,y)}
-# pos = nwx.combinatorial_embedding_to_pos(pos, False)
+
+
+# emb = nwx.planar_layout(graph,scale,center)
+# pos = nwx.combinatorial_embedding_to_pos(emb, False)
+# Helpers.report_and_draw(graph,edges,pos,width, height)
+# Helpers.save_file(graph, pos, width, height)
 # print(pos)
 # print(pos.__len__())
 # pos = AdaptedNXTool.bcc_decomposition(graph,edges,pos,width,height,True)
-
-# pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False,20,True)
-# pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False,20,True)
-# pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False,20,True)
-pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False,20,False)
+start_time = time.time()
+# if input("preprocessing?--: ") == "y":
+#     pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False,20,True)
+#     pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False,20,True)
+#     pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False,20,True)
+#     pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False,20,False)
+#
 # Helpers.check_max_degree(edges, pos)
 # Helpers.report_and_draw(graph, edges,pos, width, height)
 # Helpers.check_total(edges, pos)
@@ -49,6 +56,23 @@ pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, w
 #     pos = nwx.combinatorial_embedding_to_pos(embedding, False)
 # print(pos)
 # input('++')
+#
+# Helpers.fast_matching_snap(nodes,pos,width,height,None,None)
+# input('fine.....')
+# Helpers.save_file(graph,pos,width,height)
+
+# count = 0
+# for node1 in nodes:
+#     for node2 in nodes:
+#         if node2 != node1:
+#             if pos[node1] == pos[node2]:
+#                 print('overlapped')
+#                 print(f"{node1}, {node2}:{pos[node1]}=={pos[node2]}")
+#                 count += 1
+# print(f"overlap count: {count}")
+
+# Helpers.check_total(edges,pos)
+
 
 
 # pos[1] = (9999,9999)
@@ -66,7 +90,10 @@ default_temperature = 10
 # 0.6 or 1.8, on g6
 parameters = {"temp": 2, "step size": 3, "cooling rate" : 0.9,"transition weight": None, }
 # Helpers.check_total(edges, pos)
-pos, temperature, c_count = NewSchema.ask_for_new_schema_SA(edges, graph, pos, 100, width, height, None,parameters,None)
+pos, temperature, c_count = NewSchema.ask_for_new_schema_SA(edges, graph, pos, 400, width, height, None,parameters,None)
+pos, temperature, c_count = NewSchema.ask_for_new_schema_SA(edges, graph, pos, 400, width, height, None,parameters,None)
+
+
 # pos = AdaptedNXTool.ask_for_operation(graph, nodes, edges, attributes, pos, width, height,False)
 # pos = NewSchema.ask_for_new_schema(edges, graph, pos, 1000, width, height,None)
 Helpers.check_identical(pos_old,pos)
@@ -78,28 +105,56 @@ if input('Another spring layout?: ') == 'y':
     pos = AdaptedNXTool.fruchterman_reingold(graph, nodes, edges, attributes, pos, width, height, False, 20,True)
     new_c_count = Helpers.check_max_degree_silence(edges, pos)
     if c_count is None:
-        print(f'no c count, do it anyways..then: {new_c_count}')
+        pass
     elif c_count < new_c_count:
         print(f'old {c_count} better.. than new {new_c_count}')
         pos = pos_old
     else:
         print(f'new {new_c_count} better than old {c_count}..')
 
-
-for node1 in nodes:
-    for node2 in nodes:
-        if node2 != node1:
-            if pos[node1] == pos[node2]:
-                print('overlapped')
-                print(f"{node1}, {node2}:{pos[node1]}=={pos[node2]}")
-                count += 1
-print(f"overlap count: {count}")
+Helpers.resolve_on_edge(nodes,edges,pos,width,height)
+# breakpoint()
+#
+# count = 0
+# for edge1, edge2 in combinations(edges, 2):
+#     node = None
+#     if Helpers.is_intersect_adapted(edge1, edge2, pos, True) == -3:
+#         node = edge1[0]
+#         safe = False
+#         count += 1
+#     if Helpers.is_intersect_adapted(edge1, edge2, pos, True) == -4:
+#         node = edge1[1]
+#         safe = False
+#         count += 1
+#
+#     if Helpers.is_intersect_adapted(edge1, edge2, pos, True) == -1:
+#         node = edge2[0]
+#         safe = False
+#         count += 1
+#
+#     if Helpers.is_intersect_adapted(edge1, edge2, pos, True) == -2:
+#         node = edge2[1]
+#         safe = False
+#         count += 1
+#
+# print(f"count : {count}")
+# if count > 0:
+#     print("wdwdwdwdwdwd")
+#
+# for node1 in nodes:
+#     for node2 in nodes:
+#         if node2 != node1:
+#             if pos[node1] == pos[node2]:
+#                 print('overlapped')
+#                 print(f"{node1}, {node2}:{pos[node1]}=={pos[node2]}")
+#                 count += 1
+# print(f"overlap count: {count}")
 
 # Helpers.check_total(edges,pos)
 
 
 Helpers.save_file(graph, pos, width, height)
-
+print(time.time() - start_time)
 
 
 

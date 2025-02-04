@@ -20,12 +20,12 @@ def get_energy_as_total(edges, pos):
 
 
 def get_energy_as_crossing_old(nodes, edges, pos, crossed_edges_dict, last_moved_node):
-    max_crossing,_,_,_ = NewSchema.check_degree_reusable(nodes, edges, pos, crossed_edges_dict, last_moved_node)
+    max_crossing,_,_,_ = NewSchema.check_degree_reusable(nodes, edges, pos, crossed_edges_dict, last_moved_node, None)
     return max_crossing
 
 
 def get_energy_as_crossing_new(nodes, edges, pos, crossed_edges_dict, last_moved_node):
-    max_crossing,_,_,_ = NewSchema.check_degree_reusable(nodes, edges, pos, crossed_edges_dict, last_moved_node)
+    max_crossing,_,_,_ = NewSchema.check_degree_reusable(nodes, edges, pos, crossed_edges_dict, last_moved_node, None)
     return max_crossing
 
 
